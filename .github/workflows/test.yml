@@ -3,6 +3,13 @@ name: Test
 on:
   pull_request:
     branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'tsconfig.json'
+      - 'jest.config.js'
 
 jobs:
   test:

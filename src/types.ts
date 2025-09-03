@@ -1,0 +1,29 @@
+export interface Config {
+  sonarr: {
+    host: string;
+    apiKey: string;
+    enabled: boolean;
+  };
+  rules: {
+    removeQualityBlocked: boolean;
+    blockRemovedQualityReleases: boolean;
+    removeArchiveBlocked: boolean;
+    blockRemovedArchiveReleases: boolean;
+  };
+  schedule: string;
+  logLevel: string;
+}
+
+export interface QueueItem {
+  id: number;
+  title: string;
+  status: string;
+  trackedDownloadStatus: string;
+  trackedDownloadState: string;
+  statusMessages: StatusMessage[];
+}
+
+export interface StatusMessage {
+  title?: string;
+  messages?: string[];
+}

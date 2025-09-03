@@ -1,14 +1,16 @@
 FROM node:22-alpine
 
+RUN npm install -g pnpm
+
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package*.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 COPY tsconfig.json ./
 COPY src/ ./src/
-RUN npm run build
+RUN pnpm build
 
 USER node
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]

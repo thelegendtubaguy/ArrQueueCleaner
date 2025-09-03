@@ -1,0 +1,146 @@
+[DEBUG] Queue response: {
+  "page": 1,
+  "pageSize": 10,
+  "sortKey": "timeleft",
+  "sortDirection": "descending",
+  "totalRecords": 2,
+  "records": [
+    {
+      "seriesId": 749,
+      "episodeId": 70652,
+      "seasonNumber": 2,
+      "languages": [
+        {
+          "id": 1,
+          "name": "English"
+        }
+      ],
+      "quality": {
+        "quality": {
+          "id": 18,
+          "name": "WEBDL-2160p",
+          "source": "web",
+          "resolution": 2160
+        },
+        "revision": {
+          "version": 1,
+          "real": 0,
+          "isRepack": false
+        }
+      },
+      "customFormats": [
+        {
+          "id": 47,
+          "name": "2160p"
+        },
+        {
+          "id": 103,
+          "name": "5.1 Surround"
+        },
+        {
+          "id": 173,
+          "name": "ATVP"
+        },
+        {
+          "id": 85,
+          "name": "DD+ ATMOS"
+        },
+        {
+          "id": 132,
+          "name": "DV HDR10"
+        },
+        {
+          "id": 49,
+          "name": "FLUX"
+        },
+        {
+          "id": 146,
+          "name": "WEB Tier 01"
+        },
+        {
+          "id": 155,
+          "name": "x265"
+        }
+      ],
+      "customFormatScore": 6451,
+      "size": 5009267752,
+      "title": "Platonic.2023.S02E06.Road.Trip.2160p.ATVP.WEB-DL.DDP5.1.Atmos.DV.HDR.H.265-FLUX",
+      "estimatedCompletionTime": "2025-09-03T02:45:39Z",
+      "added": "2025-09-03T02:45:28Z",
+      "status": "downloading",
+      "trackedDownloadStatus": "ok",
+      "trackedDownloadState": "downloading",
+      "statusMessages": [],
+      "downloadId": "SABnzbd_nzo_xr8pi2ke",
+      "protocol": "usenet",
+      "downloadClient": "sabnzb",
+      "downloadClientHasPostImportCategory": false,
+      "indexer": "nzbfinder.ws",
+      "episodeHasFile": true,
+      "sizeleft": 2663215267,
+      "timeleft": "00:00:06",
+      "id": 1581599165
+    },
+    {
+      "seriesId": 69,
+      "episodeId": 6763,
+      "seasonNumber": 1,
+      "languages": [
+        {
+          "id": 1,
+          "name": "English"
+        }
+      ],
+      "quality": {
+        "quality": {
+          "id": 7,
+          "name": "Bluray-1080p",
+          "source": "bluray",
+          "resolution": 1080
+        },
+        "revision": {
+          "version": 1,
+          "real": 0,
+          "isRepack": false
+        }
+      },
+      "customFormats": [
+        {
+          "id": 46,
+          "name": "1080p"
+        },
+        {
+          "id": 154,
+          "name": "x264"
+        }
+      ],
+      "customFormatScore": 50,
+      "size": 47197991204,
+      "title": "Van.Helsing.S01E13.1080p.BluRay.x264-SHORTBREHD",
+      "estimatedCompletionTime": "2025-09-03T02:45:33Z",
+      "added": "2025-09-03T02:39:34Z",
+      "status": "completed",
+      "trackedDownloadStatus": "warning",
+      "trackedDownloadState": "importPending",
+      "statusMessages": [
+        {
+          "title": "Van.Helsing.S01E13.1080p.BluRay.x264-SHORTBREHD",
+          "messages": [
+            "Found archive file, might need to be extracted"
+          ]
+        }
+      ],
+      "errorMessage": "",
+      "downloadId": "SABnzbd_nzo_mbi9fe0n",
+      "protocol": "usenet",
+      "downloadClient": "sabnzb",
+      "downloadClientHasPostImportCategory": false,
+      "indexer": "nzbfinder.ws",
+      "outputPath": "/downloads/Van.Helsing.S01E13.1080p.BluRay.x264-SHORTBREHD",
+      "episodeHasFile": true,
+      "sizeleft": 0,
+      "timeleft": "00:00:00",
+      "id": 130548460
+    }
+  ]
+}

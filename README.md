@@ -1,6 +1,6 @@
 # ArrQueueCleaner
 
-Automated queue cleaner for Sonarr that removes stuck downloads based on configurable rules.
+Automated queue cleaner for Sonarr that removes stuck downloads based on configurable rules.  Please suggest rules you want to see added by opening an issue!
 
 ## Features
 

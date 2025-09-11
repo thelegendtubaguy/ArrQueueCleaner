@@ -43,9 +43,9 @@ export class QueueCleaner {
     }
 
     private evaluateRules(item: QueueItem): RuleMatch | null {
-        if (item.status !== 'completed' || 
-            item.trackedDownloadStatus !== 'warning' || 
-            item.trackedDownloadState !== 'importPending' || 
+        if (item.status !== 'completed' ||
+            item.trackedDownloadStatus !== 'warning' ||
+            item.trackedDownloadState !== 'importPending' ||
             !item.statusMessages?.length) {
             return null;
         }

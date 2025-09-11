@@ -10,18 +10,18 @@ export class QueueCleaner {
         this.sonarr = new SonarrClient(config.sonarr.host, config.sonarr.apiKey, config.logLevel);
     }
 
-    private log(level: string, message: string, data?: any): void {
-        if (level === 'debug' && this.config.logLevel !== 'debug') return;
+    private log(level: string, message: string, data?: unknown): void {
+        if (level === 'debug' && this.config.logLevel !== 'debug') {return;}
         const output = data ? `${message}: ${JSON.stringify(data)}` : message;
         console.log(`[${level.toUpperCase()}] ${output}`);
     }
 
     async cleanQueue(): Promise<void> {
-        if (!this.config.sonarr.enabled) return;
+        if (!this.config.sonarr.enabled) {return;}
 
         try {
             const queue = await this.sonarr.getQueue();
-            const itemsToProcess: Array<{ item: QueueItem; rule: RuleMatch }> = [];
+            const itemsToProcess: { item: QueueItem; rule: RuleMatch }[] = [];
 
             for (const item of queue) {
                 const rule = this.evaluateRules(item);
@@ -59,7 +59,7 @@ export class QueueCleaner {
         });
 
         for (const msg of item.statusMessages) {
-            if (!msg.messages?.length) continue;
+            if (!msg.messages?.length) {continue;}
 
             for (const message of msg.messages) {
                 if (this.config.rules.removeQualityBlocked && message.includes('upgrade for existing episode')) {

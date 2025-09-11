@@ -6,7 +6,7 @@ export class SonarrClient {
     private host: string;
     private logLevel: string;
 
-    constructor(host: string, apiKey: string, logLevel: string = 'info') {
+    constructor(host: string, apiKey: string, logLevel = 'info') {
         this.host = host;
         this.logLevel = logLevel;
         this.client = axios.create({
@@ -16,7 +16,7 @@ export class SonarrClient {
     }
 
     private log(level: string, message: string): void {
-        if (level === 'debug' && this.logLevel !== 'debug') return;
+        if (level === 'debug' && this.logLevel !== 'debug') {return;}
         console.log(`[${level.toUpperCase()}] ${message}`);
     }
 

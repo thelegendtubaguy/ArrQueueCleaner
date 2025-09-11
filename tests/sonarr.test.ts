@@ -5,68 +5,68 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('SonarrClient', () => {
-  let client: SonarrClient;
-  let mockAxiosInstance: any;
+    let client: SonarrClient;
+    let mockAxiosInstance: any;
 
-  beforeEach(() => {
-    mockAxiosInstance = {
-      get: jest.fn(),
-      delete: jest.fn()
-    };
-    mockedAxios.create.mockReturnValue(mockAxiosInstance);
-    
-    // Mock console.log to avoid test output
-    jest.spyOn(console, 'log').mockImplementation();
-    
-    client = new SonarrClient('http://localhost:8989', 'test-key', 'info');
-  });
+    beforeEach(() => {
+        mockAxiosInstance = {
+            get: jest.fn(),
+            delete: jest.fn()
+        };
+        mockedAxios.create.mockReturnValue(mockAxiosInstance);
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+        // Mock console.log to avoid test output
+        jest.spyOn(console, 'log').mockImplementation();
 
-  describe('getQueue', () => {
-    it('should return queue records', async () => {
-      const mockData = { records: [{ id: 1, title: 'test' }] };
-      mockAxiosInstance.get.mockResolvedValue({ data: mockData });
-
-      const result = await client.getQueue();
-
-      expect(mockAxiosInstance.get).toHaveBeenCalledWith('/queue');
-      expect(result).toEqual(mockData.records);
+        client = new SonarrClient('http://localhost:8989', 'test-key', 'info');
     });
 
-    it('should return data directly if no records property', async () => {
-      const mockData = [{ id: 1, title: 'test' }];
-      mockAxiosInstance.get.mockResolvedValue({ data: mockData });
-
-      const result = await client.getQueue();
-
-      expect(result).toEqual(mockData);
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
-  });
 
-  describe('removeFromQueue', () => {
-    it('should call delete with correct parameters', async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+    describe('getQueue', () => {
+        it('should return queue records', async () => {
+            const mockData = { records: [{ id: 1, title: 'test' }] };
+            mockAxiosInstance.get.mockResolvedValue({ data: mockData });
 
-      await client.removeFromQueue(123);
+            const result = await client.getQueue();
 
-      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
-        params: { removeFromClient: true, blocklist: false }
-      });
+            expect(mockAxiosInstance.get).toHaveBeenCalledWith('/queue');
+            expect(result).toEqual(mockData.records);
+        });
+
+        it('should return data directly if no records property', async () => {
+            const mockData = [{ id: 1, title: 'test' }];
+            mockAxiosInstance.get.mockResolvedValue({ data: mockData });
+
+            const result = await client.getQueue();
+
+            expect(result).toEqual(mockData);
+        });
     });
-  });
 
-  describe('blockRelease', () => {
-    it('should call delete with blocklist true', async () => {
-      mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+    describe('removeFromQueue', () => {
+        it('should call delete with correct parameters', async () => {
+            mockAxiosInstance.delete.mockResolvedValue({ data: {} });
 
-      await client.blockRelease(123);
+            await client.removeFromQueue(123);
 
-      expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
-        params: { removeFromClient: true, blocklist: true }
-      });
+            expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
+                params: { removeFromClient: true, blocklist: false }
+            });
+        });
     });
-  });
+
+    describe('blockRelease', () => {
+        it('should call delete with blocklist true', async () => {
+            mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+
+            await client.blockRelease(123);
+
+            expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
+                params: { removeFromClient: true, blocklist: true }
+            });
+        });
+    });
 });

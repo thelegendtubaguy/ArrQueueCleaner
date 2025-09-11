@@ -21,6 +21,8 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `BLOCK_REMOVED_QUALITY_RELEASES` | `false` | Add quality-blocked items to blocklist |
 | `REMOVE_ARCHIVE_BLOCKED` | `false` | Remove items stuck due to archive files |
 | `BLOCK_REMOVED_ARCHIVE_RELEASES` | `false` | Add archive-blocked items to blocklist |
+| `REMOVE_NO_FILES_RELEASES` | `false` | Remove items with no eligible files |
+| `BLOCK_REMOVED_NO_FILES_RELEASES` | `false` | Add no-files items to blocklist |
 | `SCHEDULE` | `*/5 * * * *` | Cron schedule (every 5 minutes) |
 | `LOG_LEVEL` | `info` | Logging level |
 
@@ -54,6 +56,8 @@ services:
       - BLOCK_REMOVED_QUALITY_RELEASES=false
       - REMOVE_ARCHIVE_BLOCKED=false
       - BLOCK_REMOVED_ARCHIVE_RELEASES=false
+      - REMOVE_NO_FILES_RELEASES=false
+      - BLOCK_REMOVED_NO_FILES_RELEASES=false
       - SCHEDULE=*/5 * * * *
       - LOG_LEVEL=info
     restart: unless-stopped

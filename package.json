@@ -1,6 +1,6 @@
 {
     "name": "arr-queue-cleaner",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Automated queue cleaner for Sonarr and Radarr",
     "main": "dist/index.js",
     "scripts": {
@@ -13,21 +13,21 @@
         "lint:fix": "eslint . --fix"
     },
     "dependencies": {
-        "axios": "^1.6.0",
-        "cron": "^3.1.0",
-        "dotenv": "^16.3.0"
+        "axios": "^1.11.0",
+        "cron": "^3.5.0",
+        "dotenv": "^16.6.1"
     },
     "devDependencies": {
         "@eslint/js": "^9.35.0",
+        "@types/jest": "^29.5.14",
         "@types/node": "^24.3.1",
-        "@types/jest": "^29.5.0",
         "@typescript-eslint/eslint-plugin": "^8.43.0",
         "@typescript-eslint/parser": "^8.43.0",
         "eslint": "^9.35.0",
         "jest": "^29.7.0",
-        "ts-jest": "^29.1.0",
-        "tsx": "^4.0.0",
-        "typescript": "^5.0.0",
+        "ts-jest": "^29.4.1",
+        "tsx": "^4.20.5",
+        "typescript": "^5.9.2",
         "typescript-eslint": "^8.43.0"
     },
     "engines": {

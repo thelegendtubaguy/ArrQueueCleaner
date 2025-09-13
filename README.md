@@ -23,6 +23,9 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `BLOCK_REMOVED_ARCHIVE_RELEASES` | `false` | Add archive-blocked items to blocklist |
 | `REMOVE_NO_FILES_RELEASES` | `false` | Remove items with no eligible files |
 | `BLOCK_REMOVED_NO_FILES_RELEASES` | `false` | Add no-files items to blocklist |
+| `REMOVE_SERIES_ID_MISMATCH` | `false` | Remove items with series ID matching conflicts |
+| `BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES` | `false` | Add series ID mismatch items to blocklist |
+| `DRY_RUN` | `false` | Log actions without actually removing/blocking items |
 | `SCHEDULE` | `*/5 * * * *` | Cron schedule (every 5 minutes) |
 | `LOG_LEVEL` | `info` | Logging level |
 
@@ -58,6 +61,9 @@ services:
       - BLOCK_REMOVED_ARCHIVE_RELEASES=false
       - REMOVE_NO_FILES_RELEASES=false
       - BLOCK_REMOVED_NO_FILES_RELEASES=false
+      - REMOVE_SERIES_ID_MISMATCH=false
+      - BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES=false
+      - DRY_RUN=false
       - SCHEDULE=*/5 * * * *
       - LOG_LEVEL=info
     restart: unless-stopped

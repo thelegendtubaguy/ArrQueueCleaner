@@ -11,7 +11,10 @@ export interface Config {
         blockRemovedArchiveReleases: boolean;
         removeNoFilesReleases: boolean;
         blockRemovedNoFilesReleases: boolean;
+        removeSeriesIdMismatch: boolean;
+        blockRemovedSeriesIdMismatchReleases: boolean;
     };
+    dryRun: boolean;
     schedule: string;
     logLevel: string;
 }
@@ -30,7 +33,7 @@ export interface StatusMessage {
     messages?: string[];
 }
 
-export type RuleType = 'quality' | 'archive' | 'noFiles';
+export type RuleType = 'quality' | 'archive' | 'noFiles' | 'seriesIdMismatch';
 
 export interface RuleMatch {
     type: RuleType;

@@ -18,8 +18,11 @@ export const createMockConfig = (overrides: DeepPartial<Config> = {}): Config =>
         blockRemovedArchiveReleases: false,
         removeNoFilesReleases: false,
         blockRemovedNoFilesReleases: false,
+        removeSeriesIdMismatch: false,
+        blockRemovedSeriesIdMismatchReleases: false,
         ...overrides.rules
     },
+    dryRun: overrides.dryRun || false,
     schedule: overrides.schedule || '*/5 * * * *',
     logLevel: overrides.logLevel || 'info'
 });
@@ -52,5 +55,13 @@ export const createNoFilesBlockedItem = (): QueueItem =>
     createMockQueueItem({
         statusMessages: [{
             messages: ['No files found are eligible for import']
+        }]
+    });
+
+export const createSeriesIdMismatchItem = (): QueueItem =>
+    createMockQueueItem({
+        trackedDownloadState: 'importBlocked',
+        statusMessages: [{
+            messages: ['Found matching series via grab history, but release was matched to series by ID. Automatic import is not possible. See the FAQ for details.']
         }]
     });

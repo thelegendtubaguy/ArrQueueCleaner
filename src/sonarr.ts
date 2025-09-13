@@ -26,7 +26,7 @@ export class SonarrClient {
     }
 
     private log(level: string, message: string): void {
-        if (level === 'debug' && this.logLevel !== 'debug') {return;}
+        if (level === 'debug' && this.logLevel !== 'debug') { return; }
         console.log(`[${level.toUpperCase()}] ${message}`);
     }
 

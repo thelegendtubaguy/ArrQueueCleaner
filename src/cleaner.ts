@@ -11,13 +11,13 @@ export class QueueCleaner {
     }
 
     private log(level: string, message: string, data?: unknown): void {
-        if (level === 'debug' && this.config.logLevel !== 'debug') {return;}
+        if (level === 'debug' && this.config.logLevel !== 'debug') { return; }
         const output = data ? `${message}: ${JSON.stringify(data)}` : message;
         console.log(`[${level.toUpperCase()}] ${output}`);
     }
 
     async cleanQueue(): Promise<void> {
-        if (!this.config.sonarr.enabled) {return;}
+        if (!this.config.sonarr.enabled) { return; }
 
         try {
             const queue = await this.sonarr.getQueue();
@@ -45,7 +45,7 @@ export class QueueCleaner {
     private evaluateRules(item: QueueItem): RuleMatch | null {
         if (item.status !== 'completed' ||
             item.trackedDownloadStatus !== 'warning' ||
-            item.trackedDownloadState !== 'importPending' ||
+            (item.trackedDownloadState !== 'importPending' && item.trackedDownloadState !== 'importBlocked') ||
             !item.statusMessages?.length) {
             return null;
         }
@@ -59,7 +59,7 @@ export class QueueCleaner {
         });
 
         for (const msg of item.statusMessages) {
-            if (!msg.messages?.length) {continue;}
+            if (!msg.messages?.length) { continue; }
 
             for (const message of msg.messages) {
                 if (this.config.rules.removeQualityBlocked && message.includes('upgrade for existing episode')) {
@@ -76,6 +76,11 @@ export class QueueCleaner {
                     this.log('debug', 'Item matched no files rule', item.title);
                     return { type: 'noFiles', shouldBlock: this.config.rules.blockRemovedNoFilesReleases };
                 }
+
+                if (this.config.rules.removeSeriesIdMismatch && message.includes('Found matching series via grab history, but release was matched to series by ID')) {
+                    this.log('debug', 'Item matched series ID mismatch rule', item.title);
+                    return { type: 'seriesIdMismatch', shouldBlock: this.config.rules.blockRemovedSeriesIdMismatchReleases };
+                }
             }
         }
 
@@ -84,6 +89,15 @@ export class QueueCleaner {
 
     private async processItem(item: QueueItem, rule: RuleMatch): Promise<void> {
         try {
+            if (this.config.dryRun) {
+                if (rule.shouldBlock) {
+                    console.log(`[DRY RUN] Would block and remove (${rule.type}): ${item.title}`);
+                } else {
+                    console.log(`[DRY RUN] Would remove (${rule.type}): ${item.title}`);
+                }
+                return;
+            }
+
             if (rule.shouldBlock) {
                 await this.sonarr.blockRelease(item.id);
                 console.log(`Blocked and removed (${rule.type}): ${item.title}`);

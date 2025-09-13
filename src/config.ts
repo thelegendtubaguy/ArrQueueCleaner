@@ -15,8 +15,11 @@ const config: Config = {
         removeArchiveBlocked: process.env.REMOVE_ARCHIVE_BLOCKED === 'true',
         blockRemovedArchiveReleases: process.env.BLOCK_REMOVED_ARCHIVE_RELEASES === 'true',
         removeNoFilesReleases: process.env.REMOVE_NO_FILES_RELEASES === 'true',
-        blockRemovedNoFilesReleases: process.env.BLOCK_REMOVED_NO_FILES_RELEASES === 'true'
+        blockRemovedNoFilesReleases: process.env.BLOCK_REMOVED_NO_FILES_RELEASES === 'true',
+        removeSeriesIdMismatch: process.env.REMOVE_SERIES_ID_MISMATCH === 'true',
+        blockRemovedSeriesIdMismatchReleases: process.env.BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES === 'true'
     },
+    dryRun: process.env.DRY_RUN === 'true',
     schedule: process.env.SCHEDULE || '*/5 * * * *',
     logLevel: process.env.LOG_LEVEL || 'info'
 };

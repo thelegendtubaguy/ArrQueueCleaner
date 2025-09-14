@@ -34,6 +34,7 @@ export const createMockQueueItem = (overrides: Partial<QueueItem> = {}): QueueIt
     trackedDownloadStatus: 'warning',
     trackedDownloadState: 'importPending',
     statusMessages: [],
+    downloadId: `download_${Math.random().toString(36).substr(2, 9)}`,
     ...overrides
 });
 
@@ -58,10 +59,11 @@ export const createNoFilesBlockedItem = (): QueueItem =>
         }]
     });
 
-export const createSeriesIdMismatchItem = (): QueueItem =>
+export const createSeriesIdMismatchItem = (overrides: Partial<QueueItem> = {}): QueueItem =>
     createMockQueueItem({
         trackedDownloadState: 'importBlocked',
         statusMessages: [{
             messages: ['Found matching series via grab history, but release was matched to series by ID. Automatic import is not possible. See the FAQ for details.']
-        }]
+        }],
+        ...overrides
     });

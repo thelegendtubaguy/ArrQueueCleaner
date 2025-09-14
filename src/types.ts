@@ -26,6 +26,7 @@ export interface QueueItem {
     trackedDownloadStatus: string;
     trackedDownloadState: string;
     statusMessages: StatusMessage[];
+    downloadId?: string;
 }
 
 export interface StatusMessage {

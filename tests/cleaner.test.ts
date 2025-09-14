@@ -1,6 +1,6 @@
 import { QueueCleaner } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem } from './test-utils';
+import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createSeriesIdMismatchItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -257,6 +257,39 @@ describe('QueueCleaner', () => {
             await cleaner.cleanQueue();
 
             expect(console.error).toHaveBeenCalledWith('Error cleaning queue:', 'API Error');
+        });
+
+        it('should group season pack episodes by downloadId and process only once', async () => {
+            const config = createMockConfig({
+                rules: { removeSeriesIdMismatch: true }
+            });
+            const cleaner = new QueueCleaner(config);
+
+            const sharedDownloadId = 'season_pack_download_123';
+            const items = [
+                createSeriesIdMismatchItem({ 
+                    id: 1, 
+                    downloadId: sharedDownloadId,
+                    title: 'The.Prince.S01.2160p.HMAX.WEB-DL.DDP2.0.H.265-BiOMA'
+                }),
+                createSeriesIdMismatchItem({ 
+                    id: 2, 
+                    downloadId: sharedDownloadId,
+                    title: 'The.Prince.S01.2160p.HMAX.WEB-DL.DDP2.0.H.265-BiOMA'
+                }),
+                createSeriesIdMismatchItem({ 
+                    id: 3, 
+                    downloadId: sharedDownloadId,
+                    title: 'The.Prince.S01.2160p.HMAX.WEB-DL.DDP2.0.H.265-BiOMA'
+                })
+            ];
+
+            mockSonarrClient.getQueue.mockResolvedValue(items);
+
+            await cleaner.cleanQueue();
+
+            // Should only process once despite 3 matching items with same downloadId
+            expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledTimes(1);
         });
     });
 

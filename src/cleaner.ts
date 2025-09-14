@@ -30,12 +30,21 @@ export class QueueCleaner {
                 }
             }
 
-            for (const { item, rule } of itemsToProcess) {
+            // Group by downloadId to handle season packs
+            const downloadGroups = new Map<string, { item: QueueItem; rule: RuleMatch }>();
+            for (const entry of itemsToProcess) {
+                const downloadId = entry.item.downloadId || entry.item.id.toString();
+                if (!downloadGroups.has(downloadId)) {
+                    downloadGroups.set(downloadId, entry);
+                }
+            }
+
+            for (const { item, rule } of downloadGroups.values()) {
                 await this.processItem(item, rule);
             }
 
-            if (itemsToProcess.length > 0) {
-                console.log(`Processed ${itemsToProcess.length} queue items`);
+            if (downloadGroups.size > 0) {
+                console.log(`Processed ${downloadGroups.size} downloads (${itemsToProcess.length} queue items)`);
             }
         } catch (error) {
             console.error('Error cleaning queue:', (error as Error).message);

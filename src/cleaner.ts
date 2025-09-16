@@ -90,6 +90,11 @@ export class QueueCleaner {
                     this.log('debug', 'Item matched series ID mismatch rule', item.title);
                     return { type: 'seriesIdMismatch', shouldBlock: this.config.rules.blockRemovedSeriesIdMismatchReleases };
                 }
+
+                if (this.config.rules.removeUndeterminedSample && message.includes('Unable to determine if file is a sample')) {
+                    this.log('debug', 'Item matched undetermined sample rule', item.title);
+                    return { type: 'undeterminedSample', shouldBlock: this.config.rules.blockRemovedUndeterminedSampleReleases };
+                }
             }
         }
 

@@ -1,6 +1,6 @@
 import { QueueCleaner } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createSeriesIdMismatchItem } from './test-utils';
+import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createSeriesIdMismatchItem, createUndeterminedSampleItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -290,6 +290,37 @@ describe('QueueCleaner', () => {
 
             // Should only process once despite 3 matching items with same downloadId
             expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledTimes(1);
+        });
+
+        it('should remove undetermined sample items when enabled', async () => {
+            const config = createMockConfig({
+                rules: { removeUndeterminedSample: true }
+            });
+            const cleaner = new QueueCleaner(config);
+            const items = [createUndeterminedSampleItem()];
+
+            mockSonarrClient.getQueue.mockResolvedValue(items);
+
+            await cleaner.cleanQueue();
+
+            expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledWith(123);
+        });
+
+        it('should block undetermined sample items when configured', async () => {
+            const config = createMockConfig({
+                rules: { 
+                    removeUndeterminedSample: true,
+                    blockRemovedUndeterminedSampleReleases: true
+                }
+            });
+            const cleaner = new QueueCleaner(config);
+            const items = [createUndeterminedSampleItem()];
+
+            mockSonarrClient.getQueue.mockResolvedValue(items);
+
+            await cleaner.cleanQueue();
+
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(123);
         });
     });
 

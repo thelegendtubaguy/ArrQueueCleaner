@@ -20,6 +20,8 @@ export const createMockConfig = (overrides: DeepPartial<Config> = {}): Config =>
         blockRemovedNoFilesReleases: false,
         removeSeriesIdMismatch: false,
         blockRemovedSeriesIdMismatchReleases: false,
+        removeUndeterminedSample: false,
+        blockRemovedUndeterminedSampleReleases: false,
         ...overrides.rules
     },
     dryRun: overrides.dryRun || false,
@@ -64,6 +66,14 @@ export const createSeriesIdMismatchItem = (overrides: Partial<QueueItem> = {}): 
         trackedDownloadState: 'importBlocked',
         statusMessages: [{
             messages: ['Found matching series via grab history, but release was matched to series by ID. Automatic import is not possible. See the FAQ for details.']
+        }],
+        ...overrides
+    });
+
+export const createUndeterminedSampleItem = (overrides: Partial<QueueItem> = {}): QueueItem =>
+    createMockQueueItem({
+        statusMessages: [{
+            messages: ['Unable to determine if file is a sample']
         }],
         ...overrides
     });

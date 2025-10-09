@@ -18,6 +18,7 @@ export const createMockConfig = (overrides: DeepPartial<Config> = {}): Config =>
         blockRemovedArchiveReleases: false,
         removeNoFilesReleases: false,
         blockRemovedNoFilesReleases: false,
+        removeNotAnUpgrade: false,
         removeSeriesIdMismatch: false,
         blockRemovedSeriesIdMismatchReleases: false,
         removeUndeterminedSample: false,
@@ -58,6 +59,13 @@ export const createNoFilesBlockedItem = (): QueueItem =>
     createMockQueueItem({
         statusMessages: [{
             messages: ['No files found are eligible for import']
+        }]
+    });
+
+export const createNotAnUpgradeItem = (): QueueItem =>
+    createMockQueueItem({
+        statusMessages: [{
+            messages: ['Not an upgrade']
         }]
     });
 

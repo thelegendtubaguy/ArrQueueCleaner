@@ -16,6 +16,7 @@ const config: Config = {
         blockRemovedArchiveReleases: process.env.BLOCK_REMOVED_ARCHIVE_RELEASES === 'true',
         removeNoFilesReleases: process.env.REMOVE_NO_FILES_RELEASES === 'true',
         blockRemovedNoFilesReleases: process.env.BLOCK_REMOVED_NO_FILES_RELEASES === 'true',
+        removeNotAnUpgrade: process.env.REMOVE_NOT_AN_UPGRADE === 'true',
         removeSeriesIdMismatch: process.env.REMOVE_SERIES_ID_MISMATCH === 'true',
         blockRemovedSeriesIdMismatchReleases: process.env.BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES === 'true',
         removeUndeterminedSample: process.env.REMOVE_UNDETERMINED_SAMPLE === 'true',

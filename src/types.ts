@@ -11,6 +11,7 @@ export interface Config {
         blockRemovedArchiveReleases: boolean;
         removeNoFilesReleases: boolean;
         blockRemovedNoFilesReleases: boolean;
+        removeNotAnUpgrade: boolean;
         removeSeriesIdMismatch: boolean;
         blockRemovedSeriesIdMismatchReleases: boolean;
         removeUndeterminedSample: boolean;
@@ -36,7 +37,7 @@ export interface StatusMessage {
     messages?: string[];
 }
 
-export type RuleType = 'quality' | 'archive' | 'noFiles' | 'seriesIdMismatch' | 'undeterminedSample';
+export type RuleType = 'quality' | 'archive' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'undeterminedSample';
 
 export interface RuleMatch {
     type: RuleType;

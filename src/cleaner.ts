@@ -86,6 +86,11 @@ export class QueueCleaner {
                     return { type: 'noFiles', shouldBlock: this.config.rules.blockRemovedNoFilesReleases };
                 }
 
+                if (this.config.rules.removeNotAnUpgrade && message.includes('Not an upgrade')) {
+                    this.log('debug', 'Item matched not an upgrade rule', item.title);
+                    return { type: 'notAnUpgrade', shouldBlock: false };
+                }
+
                 if (this.config.rules.removeSeriesIdMismatch && message.includes('Found matching series via grab history, but release was matched to series by ID')) {
                     this.log('debug', 'Item matched series ID mismatch rule', item.title);
                     return { type: 'seriesIdMismatch', shouldBlock: this.config.rules.blockRemovedSeriesIdMismatchReleases };

@@ -1,6 +1,6 @@
 import { QueueCleaner } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createSeriesIdMismatchItem, createUndeterminedSampleItem } from './test-utils';
+import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createUndeterminedSampleItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -214,6 +214,34 @@ describe('QueueCleaner', () => {
                 const config = createMockConfig({ rules: { removeNoFilesReleases: false } });
                 const cleaner = new QueueCleaner(config);
                 const items = [createNoFilesBlockedItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('not an upgrade items', () => {
+            it('should remove not an upgrade items when enabled', async () => {
+                const config = createMockConfig({ rules: { removeNotAnUpgrade: true } });
+                const cleaner = new QueueCleaner(config);
+                const items = [createNotAnUpgradeItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledWith(123);
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+
+            it('should skip not an upgrade items when disabled', async () => {
+                const config = createMockConfig({ rules: { removeNotAnUpgrade: false } });
+                const cleaner = new QueueCleaner(config);
+                const items = [createNotAnUpgradeItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
 

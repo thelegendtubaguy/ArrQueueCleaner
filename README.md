@@ -23,6 +23,7 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `BLOCK_REMOVED_ARCHIVE_RELEASES` | `false` | Add archive-blocked items to blocklist |
 | `REMOVE_NO_FILES_RELEASES` | `false` | Remove items with no eligible files |
 | `BLOCK_REMOVED_NO_FILES_RELEASES` | `false` | Add no-files items to blocklist |
+| `REMOVE_NOT_AN_UPGRADE` | `false` | Remove items flagged as "Not an upgrade" |
 | `REMOVE_SERIES_ID_MISMATCH` | `false` | Remove items with series ID matching conflicts |
 | `BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES` | `false` | Add series ID mismatch items to blocklist |
 | `REMOVE_UNDETERMINED_SAMPLE` | `false` | Remove items unable to determine if file is a sample |
@@ -48,6 +49,7 @@ pnpm start
 
 ## Docker Compose Example
 
+Here we've set some recommended rules to true for those copy/pasting this config.
 ```yaml
 version: '3.8'
 
@@ -57,13 +59,14 @@ services:
     environment:
       - SONARR_HOST=http://sonarr:8989
       - SONARR_API_KEY=your_api_key_here
-      - REMOVE_QUALITY_BLOCKED=false
+      - REMOVE_QUALITY_BLOCKED=true
       - BLOCK_REMOVED_QUALITY_RELEASES=false
-      - REMOVE_ARCHIVE_BLOCKED=false
+      - REMOVE_ARCHIVE_BLOCKED=true
       - BLOCK_REMOVED_ARCHIVE_RELEASES=false
-      - REMOVE_NO_FILES_RELEASES=false
-      - BLOCK_REMOVED_NO_FILES_RELEASES=false
-      - REMOVE_SERIES_ID_MISMATCH=false
+      - REMOVE_NO_FILES_RELEASES=true
+      - BLOCK_REMOVED_NO_FILES_RELEASES=true
+      - REMOVE_NOT_AN_UPGRADE=true
+      - REMOVE_SERIES_ID_MISMATCH=true
       - BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES=false
       - REMOVE_UNDETERMINED_SAMPLE=false
       - BLOCK_REMOVED_UNDETERMIND_SAMPLE=false

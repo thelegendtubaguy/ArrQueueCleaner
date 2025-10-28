@@ -1,12 +1,19 @@
-import { QueueCleaner } from '../src/cleaner';
+import { QueueCleaner, QueueCleanerOptions } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createUndeterminedSampleItem } from './test-utils';
+import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createUndeterminedSampleItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
 
 describe('QueueCleaner', () => {
     let mockSonarrClient: jest.Mocked<SonarrClient>;
+
+    const createCleaner = (overrides: Partial<QueueCleanerOptions> = {}): QueueCleaner => new QueueCleaner({
+        instance: overrides.instance ?? createMockInstance(),
+        rules: overrides.rules ?? createRuleConfig(),
+        dryRun: overrides.dryRun ?? false,
+        logLevel: overrides.logLevel ?? 'info'
+    });
 
     beforeEach(() => {
         mockSonarrClient = {
@@ -17,6 +24,7 @@ describe('QueueCleaner', () => {
         MockedSonarrClient.mockImplementation(() => mockSonarrClient);
 
         jest.spyOn(console, 'log').mockImplementation();
+        jest.spyOn(console, 'warn').mockImplementation();
         jest.spyOn(console, 'error').mockImplementation();
     });
 
@@ -26,8 +34,9 @@ describe('QueueCleaner', () => {
 
     describe('cleanQueue', () => {
         it('should not process when sonarr is disabled', async () => {
-            const config = createMockConfig({ sonarr: { host: '', enabled: false } });
-            const cleaner = new QueueCleaner(config);
+            const cleaner = createCleaner({
+                instance: createMockInstance({ enabled: false })
+            });
 
             await cleaner.cleanQueue();
 
@@ -35,8 +44,9 @@ describe('QueueCleaner', () => {
         });
 
         it('should skip non-completed items', async () => {
-            const config = createMockConfig({ rules: { removeQualityBlocked: true } });
-            const cleaner = new QueueCleaner(config);
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeQualityBlocked: true })
+            });
             const items = [createMockQueueItem({ status: 'downloading' })];
 
             mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -48,8 +58,9 @@ describe('QueueCleaner', () => {
         });
 
         it('should skip items without warning status', async () => {
-            const config = createMockConfig({ rules: { removeQualityBlocked: true } });
-            const cleaner = new QueueCleaner(config);
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeQualityBlocked: true })
+            });
             const items = [createMockQueueItem({ trackedDownloadStatus: 'ok' })];
 
             mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -61,8 +72,9 @@ describe('QueueCleaner', () => {
         });
 
         it('should skip items not in importPending state', async () => {
-            const config = createMockConfig({ rules: { removeQualityBlocked: true } });
-            const cleaner = new QueueCleaner(config);
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeQualityBlocked: true })
+            });
             const items = [createMockQueueItem({ trackedDownloadState: 'downloading' })];
 
             mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -74,8 +86,9 @@ describe('QueueCleaner', () => {
         });
 
         it('should skip items without status messages', async () => {
-            const config = createMockConfig({ rules: { removeQualityBlocked: true } });
-            const cleaner = new QueueCleaner(config);
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeQualityBlocked: true })
+            });
             const items = [createMockQueueItem({ statusMessages: [] })];
 
             mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -88,8 +101,9 @@ describe('QueueCleaner', () => {
 
         describe('quality blocked items', () => {
             it('should remove quality blocked items when enabled', async () => {
-                const config = createMockConfig({ rules: { removeQualityBlocked: true } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeQualityBlocked: true })
+                });
                 const items = [createQualityBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -101,13 +115,12 @@ describe('QueueCleaner', () => {
             });
 
             it('should block quality blocked items when blocking enabled', async () => {
-                const config = createMockConfig({
-                    rules: {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
                         removeQualityBlocked: true,
                         blockRemovedQualityReleases: true
-                    }
+                    })
                 });
-                const cleaner = new QueueCleaner(config);
                 const items = [createQualityBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -119,8 +132,9 @@ describe('QueueCleaner', () => {
             });
 
             it('should skip quality blocked items when disabled', async () => {
-                const config = createMockConfig({ rules: { removeQualityBlocked: false } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeQualityBlocked: false })
+                });
                 const items = [createQualityBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -134,8 +148,9 @@ describe('QueueCleaner', () => {
 
         describe('archive blocked items', () => {
             it('should remove archive blocked items when enabled', async () => {
-                const config = createMockConfig({ rules: { removeArchiveBlocked: true } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeArchiveBlocked: true })
+                });
                 const items = [createArchiveBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -147,13 +162,12 @@ describe('QueueCleaner', () => {
             });
 
             it('should block archive blocked items when blocking enabled', async () => {
-                const config = createMockConfig({
-                    rules: {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
                         removeArchiveBlocked: true,
                         blockRemovedArchiveReleases: true
-                    }
+                    })
                 });
-                const cleaner = new QueueCleaner(config);
                 const items = [createArchiveBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -165,8 +179,9 @@ describe('QueueCleaner', () => {
             });
 
             it('should skip archive blocked items when disabled', async () => {
-                const config = createMockConfig({ rules: { removeArchiveBlocked: false } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeArchiveBlocked: false })
+                });
                 const items = [createArchiveBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -180,8 +195,9 @@ describe('QueueCleaner', () => {
 
         describe('no files blocked items', () => {
             it('should remove no files blocked items when enabled', async () => {
-                const config = createMockConfig({ rules: { removeNoFilesReleases: true } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeNoFilesReleases: true })
+                });
                 const items = [createNoFilesBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -193,13 +209,12 @@ describe('QueueCleaner', () => {
             });
 
             it('should block no files blocked items when blocking enabled', async () => {
-                const config = createMockConfig({
-                    rules: {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
                         removeNoFilesReleases: true,
                         blockRemovedNoFilesReleases: true
-                    }
+                    })
                 });
-                const cleaner = new QueueCleaner(config);
                 const items = [createNoFilesBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -211,8 +226,9 @@ describe('QueueCleaner', () => {
             });
 
             it('should skip no files blocked items when disabled', async () => {
-                const config = createMockConfig({ rules: { removeNoFilesReleases: false } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeNoFilesReleases: false })
+                });
                 const items = [createNoFilesBlockedItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -226,8 +242,9 @@ describe('QueueCleaner', () => {
 
         describe('not an upgrade items', () => {
             it('should remove not an upgrade items when enabled', async () => {
-                const config = createMockConfig({ rules: { removeNotAnUpgrade: true } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeNotAnUpgrade: true })
+                });
                 const items = [createNotAnUpgradeItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -239,8 +256,9 @@ describe('QueueCleaner', () => {
             });
 
             it('should skip not an upgrade items when disabled', async () => {
-                const config = createMockConfig({ rules: { removeNotAnUpgrade: false } });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeNotAnUpgrade: false })
+                });
                 const items = [createNotAnUpgradeItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -253,14 +271,13 @@ describe('QueueCleaner', () => {
         });
 
         it('should process multiple matching items', async () => {
-            const config = createMockConfig({
-                rules: {
+            const cleaner = createCleaner({
+                rules: createRuleConfig({
                     removeQualityBlocked: true,
                     removeArchiveBlocked: true,
                     removeNoFilesReleases: true
-                }
+                })
             });
-            const cleaner = new QueueCleaner(config);
 
             const items = [
                 createQualityBlockedItem(),
@@ -277,21 +294,21 @@ describe('QueueCleaner', () => {
         });
 
         it('should handle errors gracefully', async () => {
-            const config = createMockConfig({ rules: { removeQualityBlocked: true } });
-            const cleaner = new QueueCleaner(config);
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeQualityBlocked: true })
+            });
 
             mockSonarrClient.getQueue.mockRejectedValue(new Error('API Error'));
 
             await cleaner.cleanQueue();
 
-            expect(console.error).toHaveBeenCalledWith('Error cleaning queue:', 'API Error');
+            expect(console.error).toHaveBeenCalledWith('[ERROR] [Test Sonarr] Error cleaning queue: "API Error"');
         });
 
         it('should group season pack episodes by downloadId and process only once', async () => {
-            const config = createMockConfig({
-                rules: { removeSeriesIdMismatch: true }
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeSeriesIdMismatch: true })
             });
-            const cleaner = new QueueCleaner(config);
 
             const sharedDownloadId = 'season_pack_download_123';
             const items = [
@@ -321,10 +338,9 @@ describe('QueueCleaner', () => {
         });
 
         it('should remove undetermined sample items when enabled', async () => {
-            const config = createMockConfig({
-                rules: { removeUndeterminedSample: true }
+            const cleaner = createCleaner({
+                rules: createRuleConfig({ removeUndeterminedSample: true })
             });
-            const cleaner = new QueueCleaner(config);
             const items = [createUndeterminedSampleItem()];
 
             mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -335,13 +351,12 @@ describe('QueueCleaner', () => {
         });
 
         it('should block undetermined sample items when configured', async () => {
-            const config = createMockConfig({
-                rules: { 
+            const cleaner = createCleaner({
+                rules: createRuleConfig({
                     removeUndeterminedSample: true,
                     blockRemovedUndeterminedSampleReleases: true
-                }
+                })
             });
-            const cleaner = new QueueCleaner(config);
             const items = [createUndeterminedSampleItem()];
 
             mockSonarrClient.getQueue.mockResolvedValue(items);
@@ -383,8 +398,9 @@ describe('QueueCleaner', () => {
 
         testCases.forEach(({ name, config: rules, expectProcessed }) => {
             it(`should handle ${name}`, async () => {
-                const config = createMockConfig({ rules });
-                const cleaner = new QueueCleaner(config);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig(rules)
+                });
 
                 const items = [createQualityBlockedItem(), createArchiveBlockedItem(), createNoFilesBlockedItem()];
                 mockSonarrClient.getQueue.mockResolvedValue(items);

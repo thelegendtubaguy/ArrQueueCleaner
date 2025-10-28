@@ -15,8 +15,10 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SONARR_HOST` | `http://localhost:8989` | Sonarr instance URL |
-| `SONARR_API_KEY` | *required* | Sonarr API key |
+| `SONARR_INSTANCES` | – | JSON array of Sonarr instances (see below) |
+| `SONARR_INSTANCES_FILE` | – | Path to JSON/YAML file containing Sonarr instances |
+| `SONARR_HOST` | `http://localhost:8989` | Legacy single-instance Sonarr URL (ignored when instances are provided) |
+| `SONARR_API_KEY` | *required for legacy mode* | Legacy single-instance Sonarr API key |
 | `REMOVE_QUALITY_BLOCKED` | `false` | Remove items blocked by quality rules |
 | `BLOCK_REMOVED_QUALITY_RELEASES` | `false` | Add quality-blocked items to blocklist |
 | `REMOVE_ARCHIVE_BLOCKED` | `false` | Remove items stuck due to archive files |
@@ -33,6 +35,33 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `LOG_LEVEL` | `info` | Logging level |
 
 **Note:** No rules are configured by default for safety, you must opt in to using them.
+
+### Multiple Sonarr Instances
+
+ArrQueueCleaner can cycle through multiple Sonarr instances in a single process. Configure instances using either:
+
+1. A structured environment variable:
+
+```bash
+export SONARR_INSTANCES='[
+  {"name":"HD Shows","host":"http://sonarr-hd:8989","apiKey":"hd-key"},
+  {"name":"4K Shows","host":"http://sonarr-4k:8989","apiKey":"4k-key","rules":{"removeNotAnUpgrade":true}}
+]'
+```
+
+2. A JSON or YAML file referenced by `SONARR_INSTANCES_FILE`:
+
+```bash
+export SONARR_INSTANCES_FILE=/config/sonarr-instances.json
+```
+
+Each entry requires `host` and `apiKey`, and supports optional fields:
+
+- `name`: Friendly identifier used in logs; defaults to `Sonarr {index}` when omitted.
+- `enabled`: Toggle an instance without removing it (defaults to `true`).
+- `rules`: Partial rule overrides merged with the global rule settings for just that instance.
+
+If neither `SONARR_INSTANCES` nor `SONARR_INSTANCES_FILE` is supplied, ArrQueueCleaner falls back to the existing `SONARR_HOST` / `SONARR_API_KEY` variables for single-instance deployments.
 
 ## Quick Start
 
@@ -57,22 +86,25 @@ services:
   arr-queue-cleaner:
     image: ghcr.io/thelegendtubaguy/arrqueuecleaner:latest
     environment:
-      - SONARR_HOST=http://sonarr:8989
-      - SONARR_API_KEY=your_api_key_here
-      - REMOVE_QUALITY_BLOCKED=true
-      - BLOCK_REMOVED_QUALITY_RELEASES=false
-      - REMOVE_ARCHIVE_BLOCKED=true
-      - BLOCK_REMOVED_ARCHIVE_RELEASES=false
-      - REMOVE_NO_FILES_RELEASES=true
-      - BLOCK_REMOVED_NO_FILES_RELEASES=true
-      - REMOVE_NOT_AN_UPGRADE=true
-      - REMOVE_SERIES_ID_MISMATCH=true
-      - BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES=false
-      - REMOVE_UNDETERMINED_SAMPLE=false
-      - BLOCK_REMOVED_UNDETERMIND_SAMPLE=false
-      - DRY_RUN=false
-      - SCHEDULE=*/5 * * * *
-      - LOG_LEVEL=info
+      SONARR_INSTANCES: >-
+        [
+          {"name":"HD Shows","host":"http://sonarr:8989","apiKey":"your_hd_api_key"},
+          {"name":"4K Shows","host":"http://sonarr-4k:8989","apiKey":"your_4k_api_key","rules":{"removeNotAnUpgrade":true}}
+        ]
+      REMOVE_QUALITY_BLOCKED: 'true'
+      BLOCK_REMOVED_QUALITY_RELEASES: 'false'
+      REMOVE_ARCHIVE_BLOCKED: 'true'
+      BLOCK_REMOVED_ARCHIVE_RELEASES: 'false'
+      REMOVE_NO_FILES_RELEASES: 'true'
+      BLOCK_REMOVED_NO_FILES_RELEASES: 'true'
+      REMOVE_NOT_AN_UPGRADE: 'true'
+      REMOVE_SERIES_ID_MISMATCH: 'true'
+      BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES: 'false'
+      REMOVE_UNDETERMINED_SAMPLE: 'false'
+      BLOCK_REMOVED_UNDETERMIND_SAMPLE: 'false'
+      DRY_RUN: 'false'
+      SCHEDULE: '*/5 * * * *'
+      LOG_LEVEL: 'info'
     restart: unless-stopped
 ```
 

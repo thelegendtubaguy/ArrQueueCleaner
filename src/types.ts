@@ -1,22 +1,28 @@
+export interface RuleConfig {
+    removeQualityBlocked: boolean;
+    blockRemovedQualityReleases: boolean;
+    removeArchiveBlocked: boolean;
+    blockRemovedArchiveReleases: boolean;
+    removeNoFilesReleases: boolean;
+    blockRemovedNoFilesReleases: boolean;
+    removeNotAnUpgrade: boolean;
+    removeSeriesIdMismatch: boolean;
+    blockRemovedSeriesIdMismatchReleases: boolean;
+    removeUndeterminedSample: boolean;
+    blockRemovedUndeterminedSampleReleases: boolean;
+}
+
+export interface SonarrInstanceConfig {
+    name: string;
+    host: string;
+    apiKey: string;
+    enabled: boolean;
+    rules?: Partial<RuleConfig>;
+}
+
 export interface Config {
-    sonarr: {
-        host: string;
-        apiKey: string;
-        enabled: boolean;
-    };
-    rules: {
-        removeQualityBlocked: boolean;
-        blockRemovedQualityReleases: boolean;
-        removeArchiveBlocked: boolean;
-        blockRemovedArchiveReleases: boolean;
-        removeNoFilesReleases: boolean;
-        blockRemovedNoFilesReleases: boolean;
-        removeNotAnUpgrade: boolean;
-        removeSeriesIdMismatch: boolean;
-        blockRemovedSeriesIdMismatchReleases: boolean;
-        removeUndeterminedSample: boolean;
-        blockRemovedUndeterminedSampleReleases: boolean;
-    };
+    sonarrInstances: SonarrInstanceConfig[];
+    rules: RuleConfig;
     dryRun: boolean;
     schedule: string;
     logLevel: string;

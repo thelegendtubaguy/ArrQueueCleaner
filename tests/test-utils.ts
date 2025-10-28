@@ -1,33 +1,30 @@
-import { Config, QueueItem } from '../src/types';
+import { QueueItem, RuleConfig, SonarrInstanceConfig } from '../src/types';
 
 type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-export const createMockConfig = (overrides: DeepPartial<Config> = {}): Config => ({
-    sonarr: {
-        host: 'http://localhost:8989',
-        apiKey: 'test-api-key',
-        enabled: true,
-        ...overrides.sonarr
-    },
-    rules: {
-        removeQualityBlocked: false,
-        blockRemovedQualityReleases: false,
-        removeArchiveBlocked: false,
-        blockRemovedArchiveReleases: false,
-        removeNoFilesReleases: false,
-        blockRemovedNoFilesReleases: false,
-        removeNotAnUpgrade: false,
-        removeSeriesIdMismatch: false,
-        blockRemovedSeriesIdMismatchReleases: false,
-        removeUndeterminedSample: false,
-        blockRemovedUndeterminedSampleReleases: false,
-        ...overrides.rules
-    },
-    dryRun: overrides.dryRun || false,
-    schedule: overrides.schedule || '*/5 * * * *',
-    logLevel: overrides.logLevel || 'info'
+export const createRuleConfig = (overrides: Partial<RuleConfig> = {}): RuleConfig => ({
+    removeQualityBlocked: false,
+    blockRemovedQualityReleases: false,
+    removeArchiveBlocked: false,
+    blockRemovedArchiveReleases: false,
+    removeNoFilesReleases: false,
+    blockRemovedNoFilesReleases: false,
+    removeNotAnUpgrade: false,
+    removeSeriesIdMismatch: false,
+    blockRemovedSeriesIdMismatchReleases: false,
+    removeUndeterminedSample: false,
+    blockRemovedUndeterminedSampleReleases: false,
+    ...overrides
+});
+
+export const createMockInstance = (overrides: DeepPartial<SonarrInstanceConfig> = {}): SonarrInstanceConfig => ({
+    name: overrides.name ?? 'Test Sonarr',
+    host: overrides.host ?? 'http://localhost:8989',
+    apiKey: overrides.apiKey ?? 'test-api-key',
+    enabled: overrides.enabled ?? true,
+    rules: overrides.rules
 });
 
 export const createMockQueueItem = (overrides: Partial<QueueItem> = {}): QueueItem => ({

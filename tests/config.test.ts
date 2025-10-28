@@ -122,7 +122,7 @@ describe('config', () => {
         }) as never);
 
         await expect(loadConfig()).rejects.toThrow('process.exit called');
-        expect(console.error).toHaveBeenCalledWith('Sonarr API key is required for enabled instances: Broken');
+        expect(console.error).toHaveBeenCalledWith('Sonarr API key is required for one or more enabled instances. Update your configuration to supply keys for all enabled Sonarr instances.');
 
         exitMock.mockRestore();
     });

@@ -203,8 +203,7 @@ function validateInstances(instances: SonarrInstanceConfig[]): void {
     const missingApiKey = instances.filter(instance => instance.enabled && !instance.apiKey);
 
     if (missingApiKey.length > 0) {
-        const names = missingApiKey.map(instance => instance.name).join(', ');
-        console.error(`Sonarr API key is required for enabled instances: ${names}`);
+        console.error('Sonarr API key is required for one or more enabled instances. Update your configuration to supply keys for all enabled Sonarr instances.');
         process.exit(1);
     }
 }

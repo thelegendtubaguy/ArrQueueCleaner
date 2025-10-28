@@ -7,6 +7,15 @@ dotenvConfig();
 
 const parseBooleanEnv = (key: string): boolean => process.env[key] === 'true';
 
+const getNormalizedEnvBoolean = (keys: string[]): boolean => {
+    for (const key of keys) {
+        if (process.env[key] !== undefined) {
+            return parseBooleanEnv(key);
+        }
+    }
+    return false;
+};
+
 const rulesFromEnv: RuleConfig = {
     removeQualityBlocked: parseBooleanEnv('REMOVE_QUALITY_BLOCKED'),
     blockRemovedQualityReleases: parseBooleanEnv('BLOCK_REMOVED_QUALITY_RELEASES'),
@@ -18,7 +27,11 @@ const rulesFromEnv: RuleConfig = {
     removeSeriesIdMismatch: parseBooleanEnv('REMOVE_SERIES_ID_MISMATCH'),
     blockRemovedSeriesIdMismatchReleases: parseBooleanEnv('BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES'),
     removeUndeterminedSample: parseBooleanEnv('REMOVE_UNDETERMINED_SAMPLE'),
-    blockRemovedUndeterminedSampleReleases: parseBooleanEnv('BLOCK_REMOVED_UNDETERMIND_SAMPLE')
+    // Keep legacy misspelling for backward compatibility with existing deployments.
+    blockRemovedUndeterminedSampleReleases: getNormalizedEnvBoolean([
+        'BLOCK_REMOVED_UNDETERMINED_SAMPLE',
+        'BLOCK_REMOVED_UNDETERMIND_SAMPLE'
+    ])
 };
 
 const config: Config = {

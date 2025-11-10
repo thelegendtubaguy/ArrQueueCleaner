@@ -8,6 +8,8 @@ export interface RuleConfig {
     removeNotAnUpgrade: boolean;
     removeSeriesIdMismatch: boolean;
     blockRemovedSeriesIdMismatchReleases: boolean;
+    removeEpisodeCountMismatch: boolean;
+    blockRemovedEpisodeCountMismatchReleases: boolean;
     removeUndeterminedSample: boolean;
     blockRemovedUndeterminedSampleReleases: boolean;
 }
@@ -43,7 +45,7 @@ export interface StatusMessage {
     messages?: string[];
 }
 
-export type RuleType = 'quality' | 'archive' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'undeterminedSample';
+export type RuleType = 'quality' | 'archive' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'episodeCountMismatch' | 'undeterminedSample';
 
 export interface RuleMatch {
     type: RuleType;

@@ -26,6 +26,8 @@ const rulesFromEnv: RuleConfig = {
     removeNotAnUpgrade: parseBooleanEnv('REMOVE_NOT_AN_UPGRADE'),
     removeSeriesIdMismatch: parseBooleanEnv('REMOVE_SERIES_ID_MISMATCH'),
     blockRemovedSeriesIdMismatchReleases: parseBooleanEnv('BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES'),
+    removeEpisodeCountMismatch: parseBooleanEnv('REMOVE_EPISODE_COUNT_MISMATCH'),
+    blockRemovedEpisodeCountMismatchReleases: parseBooleanEnv('BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES'),
     removeUndeterminedSample: parseBooleanEnv('REMOVE_UNDETERMINED_SAMPLE'),
     // Keep legacy misspelling for backward compatibility with existing deployments.
     blockRemovedUndeterminedSampleReleases: getNormalizedEnvBoolean([

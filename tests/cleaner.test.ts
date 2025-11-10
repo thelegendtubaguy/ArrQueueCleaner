@@ -1,6 +1,6 @@
 import { QueueCleaner, QueueCleanerOptions } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createUndeterminedSampleItem } from './test-utils';
+import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -260,6 +260,53 @@ describe('QueueCleaner', () => {
                     rules: createRuleConfig({ removeNotAnUpgrade: false })
                 });
                 const items = [createNotAnUpgradeItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('episode count mismatch items', () => {
+            it('should remove episode count mismatch items when enabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeEpisodeCountMismatch: true })
+                });
+                const items = [createEpisodeCountMismatchItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledWith(123);
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+
+            it('should block episode count mismatch items when blocking enabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
+                        removeEpisodeCountMismatch: true,
+                        blockRemovedEpisodeCountMismatchReleases: true
+                    })
+                });
+                const items = [createEpisodeCountMismatchItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(123);
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+            });
+
+            it('should skip episode count mismatch items when disabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeEpisodeCountMismatch: false })
+                });
+                const items = [createEpisodeCountMismatchItem()];
 
                 mockSonarrClient.getQueue.mockResolvedValue(items);
 

@@ -117,6 +117,11 @@ export class QueueCleaner {
                     return { type: 'seriesIdMismatch', shouldBlock: this.rules.blockRemovedSeriesIdMismatchReleases };
                 }
 
+                if (this.rules.removeEpisodeCountMismatch && message.includes('Episode file on disk contains more episodes than this file contains')) {
+                    this.log('debug', 'Item matched episode count mismatch rule', item.title);
+                    return { type: 'episodeCountMismatch', shouldBlock: this.rules.blockRemovedEpisodeCountMismatchReleases };
+                }
+
                 if (this.rules.removeUndeterminedSample && message.includes('Unable to determine if file is a sample')) {
                     this.log('debug', 'Item matched undetermined sample rule', item.title);
                     return { type: 'undeterminedSample', shouldBlock: this.rules.blockRemovedUndeterminedSampleReleases };

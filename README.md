@@ -28,6 +28,8 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `REMOVE_NOT_AN_UPGRADE` | `false` | Remove items flagged as "Not an upgrade" |
 | `REMOVE_SERIES_ID_MISMATCH` | `false` | Remove items with series ID matching conflicts |
 | `BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES` | `false` | Add series ID mismatch items to blocklist |
+| `REMOVE_EPISODE_COUNT_MISMATCH` | `false` | Remove items where the on-disk file spans more episodes than the release |
+| `BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES` | `false` | Add episode-count mismatch items to blocklist |
 | `REMOVE_UNDETERMINED_SAMPLE` | `false` | Remove items unable to determine if file is a sample |
 | `BLOCK_REMOVED_UNDETERMINED_SAMPLE` | `false` | Add undetermined sample items to blocklist |
 | `DRY_RUN` | `false` | Log actions without actually removing/blocking items |
@@ -100,6 +102,8 @@ services:
       REMOVE_NOT_AN_UPGRADE: 'true'
       REMOVE_SERIES_ID_MISMATCH: 'true'
       BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES: 'false'
+      REMOVE_EPISODE_COUNT_MISMATCH: 'false'
+      BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES: 'false'
       REMOVE_UNDETERMINED_SAMPLE: 'false'
       BLOCK_REMOVED_UNDETERMINED_SAMPLE: 'false'
       DRY_RUN: 'false'

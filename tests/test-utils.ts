@@ -14,6 +14,8 @@ export const createRuleConfig = (overrides: Partial<RuleConfig> = {}): RuleConfi
     removeNotAnUpgrade: false,
     removeSeriesIdMismatch: false,
     blockRemovedSeriesIdMismatchReleases: false,
+    removeEpisodeCountMismatch: false,
+    blockRemovedEpisodeCountMismatchReleases: false,
     removeUndeterminedSample: false,
     blockRemovedUndeterminedSampleReleases: false,
     ...overrides
@@ -71,6 +73,14 @@ export const createSeriesIdMismatchItem = (overrides: Partial<QueueItem> = {}): 
         trackedDownloadState: 'importBlocked',
         statusMessages: [{
             messages: ['Found matching series via grab history, but release was matched to series by ID. Automatic import is not possible. See the FAQ for details.']
+        }],
+        ...overrides
+    });
+
+export const createEpisodeCountMismatchItem = (overrides: Partial<QueueItem> = {}): QueueItem =>
+    createMockQueueItem({
+        statusMessages: [{
+            messages: ['Episode file on disk contains more episodes than this file contains']
         }],
         ...overrides
     });

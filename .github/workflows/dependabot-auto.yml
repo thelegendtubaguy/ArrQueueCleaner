@@ -26,8 +26,8 @@ jobs:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Enable auto-merge for dev dependency patch updates
-        if: contains(steps.metadata.outputs.dependency-type, 'development') && steps.metadata.outputs.update-type == 'version-update:semver-patch'
+      - name: Enable auto-merge for dev dependency patch/minor updates
+        if: contains(steps.metadata.outputs.dependency-type, 'development') && (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor')
         run: gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}

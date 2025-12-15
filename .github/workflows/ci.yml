@@ -3,12 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - '.github/**'
   push:
     branches: [main]
-    paths-ignore:
-      - '.github/**'
 
 jobs:
   lint-and-test:
@@ -17,22 +13,39 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       
+      - id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            run_ci:
+              - '!**/.github/**'
+
+      - name: Skip (only .github changes)
+        if: steps.changes.outputs.run_ci != 'true'
+        run: echo "Skipping CI for .github-only change."
+      
       - uses: pnpm/action-setup@v4
+        if: steps.changes.outputs.run_ci == 'true'
         with:
           version: latest
           
       - uses: actions/setup-node@v6
+        if: steps.changes.outputs.run_ci == 'true'
         with:
           node-version: '22'
           cache: 'pnpm'
           
       - run: pnpm install --frozen-lockfile
+        if: steps.changes.outputs.run_ci == 'true'
       
       - name: Lint
+        if: steps.changes.outputs.run_ci == 'true'
         run: pnpm lint
         
       - name: Test
+        if: steps.changes.outputs.run_ci == 'true'
         run: pnpm test
         
       - name: Build
+        if: steps.changes.outputs.run_ci == 'true'
         run: pnpm build

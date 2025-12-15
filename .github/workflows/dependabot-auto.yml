@@ -1,4 +1,3 @@
-{% data reusables.actions.actions-not-certified-by-github-comment %}
 name: Dependabot auto-approve and merge
 
 on:

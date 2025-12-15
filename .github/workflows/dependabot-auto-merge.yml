@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Auto-approve Dependabot PR
         uses: hmarr/auto-approve-action@v4
-        with:
-          github-token: ${{ secrets.DEPENDABOT_AUTO_APPROVE_TOKEN }}
 
       - name: Enable auto-merge for Dependabot PR
         uses: actions/dependabot-auto-merge@v2

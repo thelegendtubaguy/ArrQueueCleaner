@@ -24,7 +24,7 @@ jobs:
         if: steps.changes.outputs.run_ci != 'true'
         run: echo "Skipping CI for .github-only change."
       
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         if: steps.changes.outputs.run_ci == 'true'
         with:
           version: latest

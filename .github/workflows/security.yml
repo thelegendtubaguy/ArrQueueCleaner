@@ -34,7 +34,7 @@ jobs:
         
       - name: Setup pnpm
         if: github.event_name == 'schedule' || steps.changes.outputs.run_scan == 'true'
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: latest
         

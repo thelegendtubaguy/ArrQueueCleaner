@@ -1,4 +1,5 @@
 import { SonarrClient } from './sonarr';
+import { RULE_DEFINITIONS } from './rules';
 import { QueueItem, RuleMatch, RuleConfig, SonarrInstanceConfig } from './types';
 
 export interface QueueCleanerOptions {
@@ -92,44 +93,17 @@ export class QueueCleaner {
             if (!msg.messages?.length) { continue; }
 
             for (const message of msg.messages) {
-                if (this.rules.removeQualityBlocked && message.includes('upgrade for existing episode')) {
-                    this.log('debug', 'Item matched quality rule', item.title);
-                    return { type: 'quality', shouldBlock: this.rules.blockRemovedQualityReleases };
-                }
+                for (const definition of RULE_DEFINITIONS) {
+                    if (!this.rules[definition.enabledKey] || !definition.matches(message)) {
+                        continue;
+                    }
 
-                if (this.rules.removeArchiveBlocked && message.includes('archive file')) {
-                    this.log('debug', 'Item matched archive rule', item.title);
-                    return { type: 'archive', shouldBlock: this.rules.blockRemovedArchiveReleases };
-                }
+                    this.log('debug', `Item matched ${definition.type} rule`, item.title);
 
-                if (this.rules.removeExecutableBlocked && message.includes('executable file')) {
-                    this.log('debug', 'Item matched executable rule', item.title);
-                    return { type: 'executable', shouldBlock: true };
-                }
-
-                if (this.rules.removeNoFilesReleases && message.includes('No files found are eligible')) {
-                    this.log('debug', 'Item matched no files rule', item.title);
-                    return { type: 'noFiles', shouldBlock: this.rules.blockRemovedNoFilesReleases };
-                }
-
-                if (this.rules.removeNotAnUpgrade && message.includes('Not an upgrade')) {
-                    this.log('debug', 'Item matched not an upgrade rule', item.title);
-                    return { type: 'notAnUpgrade', shouldBlock: false };
-                }
-
-                if (this.rules.removeSeriesIdMismatch && message.includes('Found matching series via grab history, but release was matched to series by ID')) {
-                    this.log('debug', 'Item matched series ID mismatch rule', item.title);
-                    return { type: 'seriesIdMismatch', shouldBlock: this.rules.blockRemovedSeriesIdMismatchReleases };
-                }
-
-                if (this.rules.removeEpisodeCountMismatch && message.includes('Episode file on disk contains more episodes than this file contains')) {
-                    this.log('debug', 'Item matched episode count mismatch rule', item.title);
-                    return { type: 'episodeCountMismatch', shouldBlock: this.rules.blockRemovedEpisodeCountMismatchReleases };
-                }
-
-                if (this.rules.removeUndeterminedSample && message.includes('Unable to determine if file is a sample')) {
-                    this.log('debug', 'Item matched undetermined sample rule', item.title);
-                    return { type: 'undeterminedSample', shouldBlock: this.rules.blockRemovedUndeterminedSampleReleases };
+                    return {
+                        type: definition.type,
+                        shouldBlock: definition.forceBlock || (definition.blockKey ? this.rules[definition.blockKey] : false)
+                    };
                 }
             }
         }

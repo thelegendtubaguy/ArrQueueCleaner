@@ -1,13 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { config as dotenvConfig } from 'dotenv';
+import { buildRulesFromEnv, DEFAULT_RULE_CONFIG } from './rules';
 import { Config, RuleConfig, SonarrInstanceConfig } from './types';
 
 dotenvConfig();
 
 const parseBooleanEnv = (key: string): boolean => process.env[key] === 'true';
 
-const getNormalizedEnvBoolean = (keys: string[]): boolean => {
+const getNormalizedEnvBoolean = (keys: readonly string[]): boolean => {
     for (const key of keys) {
         if (process.env[key] !== undefined) {
             return parseBooleanEnv(key);
@@ -16,26 +17,7 @@ const getNormalizedEnvBoolean = (keys: string[]): boolean => {
     return false;
 };
 
-const rulesFromEnv: RuleConfig = {
-    removeQualityBlocked: parseBooleanEnv('REMOVE_QUALITY_BLOCKED'),
-    blockRemovedQualityReleases: parseBooleanEnv('BLOCK_REMOVED_QUALITY_RELEASES'),
-    removeArchiveBlocked: parseBooleanEnv('REMOVE_ARCHIVE_BLOCKED'),
-    blockRemovedArchiveReleases: parseBooleanEnv('BLOCK_REMOVED_ARCHIVE_RELEASES'),
-    removeExecutableBlocked: parseBooleanEnv('REMOVE_EXECUTABLE_BLOCKED'),
-    removeNoFilesReleases: parseBooleanEnv('REMOVE_NO_FILES_RELEASES'),
-    blockRemovedNoFilesReleases: parseBooleanEnv('BLOCK_REMOVED_NO_FILES_RELEASES'),
-    removeNotAnUpgrade: parseBooleanEnv('REMOVE_NOT_AN_UPGRADE'),
-    removeSeriesIdMismatch: parseBooleanEnv('REMOVE_SERIES_ID_MISMATCH'),
-    blockRemovedSeriesIdMismatchReleases: parseBooleanEnv('BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES'),
-    removeEpisodeCountMismatch: parseBooleanEnv('REMOVE_EPISODE_COUNT_MISMATCH'),
-    blockRemovedEpisodeCountMismatchReleases: parseBooleanEnv('BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES'),
-    removeUndeterminedSample: parseBooleanEnv('REMOVE_UNDETERMINED_SAMPLE'),
-    // Keep legacy misspelling for backward compatibility with existing deployments.
-    blockRemovedUndeterminedSampleReleases: getNormalizedEnvBoolean([
-        'BLOCK_REMOVED_UNDETERMINED_SAMPLE',
-        'BLOCK_REMOVED_UNDETERMIND_SAMPLE'
-    ])
-};
+const rulesFromEnv: RuleConfig = buildRulesFromEnv(parseBooleanEnv, getNormalizedEnvBoolean);
 
 const config: Config = {
     sonarrInstances: resolveSonarrInstances(),
@@ -181,7 +163,7 @@ function normalizeRuleOverrides(overrides: unknown): Partial<RuleConfig> | undef
     }
 
     const result: Partial<RuleConfig> = {};
-    const keys = Object.keys(rulesFromEnv) as (keyof RuleConfig)[];
+    const keys = Object.keys(DEFAULT_RULE_CONFIG) as (keyof RuleConfig)[];
 
     for (const key of keys) {
         const value = (overrides as Record<string, unknown>)[key];

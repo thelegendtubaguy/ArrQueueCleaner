@@ -1,3 +1,4 @@
+import { DEFAULT_RULE_CONFIG } from '../src/rules';
 import { QueueItem, RuleConfig, SonarrInstanceConfig } from '../src/types';
 
 type DeepPartial<T> = {
@@ -5,20 +6,7 @@ type DeepPartial<T> = {
 };
 
 export const createRuleConfig = (overrides: Partial<RuleConfig> = {}): RuleConfig => ({
-    removeQualityBlocked: false,
-    blockRemovedQualityReleases: false,
-    removeArchiveBlocked: false,
-    blockRemovedArchiveReleases: false,
-    removeExecutableBlocked: false,
-    removeNoFilesReleases: false,
-    blockRemovedNoFilesReleases: false,
-    removeNotAnUpgrade: false,
-    removeSeriesIdMismatch: false,
-    blockRemovedSeriesIdMismatchReleases: false,
-    removeEpisodeCountMismatch: false,
-    blockRemovedEpisodeCountMismatchReleases: false,
-    removeUndeterminedSample: false,
-    blockRemovedUndeterminedSampleReleases: false,
+    ...DEFAULT_RULE_CONFIG,
     ...overrides
 });
 

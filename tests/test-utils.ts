@@ -9,6 +9,7 @@ export const createRuleConfig = (overrides: Partial<RuleConfig> = {}): RuleConfi
     blockRemovedQualityReleases: false,
     removeArchiveBlocked: false,
     blockRemovedArchiveReleases: false,
+    removeExecutableBlocked: false,
     removeNoFilesReleases: false,
     blockRemovedNoFilesReleases: false,
     removeNotAnUpgrade: false,
@@ -58,6 +59,13 @@ export const createNoFilesBlockedItem = (): QueueItem =>
     createMockQueueItem({
         statusMessages: [{
             messages: ['No files found are eligible for import']
+        }]
+    });
+
+export const createExecutableBlockedItem = (): QueueItem =>
+    createMockQueueItem({
+        statusMessages: [{
+            messages: ['Caution: Found executable file']
         }]
     });
 

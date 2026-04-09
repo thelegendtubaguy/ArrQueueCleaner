@@ -1,6 +1,6 @@
 import { QueueCleaner, QueueCleanerOptions } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem } from './test-utils';
+import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createExecutableBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -237,6 +237,36 @@ describe('QueueCleaner', () => {
 
                 expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
                 expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('executable blocked items', () => {
+            it('should block executable blocked items when enabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeExecutableBlocked: true })
+                });
+                const items = [createExecutableBlockedItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(123);
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+            });
+
+            it('should skip executable blocked items when disabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ removeExecutableBlocked: false })
+                });
+                const items = [createExecutableBlockedItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
             });
         });
 

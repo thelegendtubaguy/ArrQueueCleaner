@@ -3,6 +3,7 @@ export interface RuleConfig {
     blockRemovedQualityReleases: boolean;
     removeArchiveBlocked: boolean;
     blockRemovedArchiveReleases: boolean;
+    removeExecutableBlocked: boolean;
     removeNoFilesReleases: boolean;
     blockRemovedNoFilesReleases: boolean;
     removeNotAnUpgrade: boolean;
@@ -45,7 +46,7 @@ export interface StatusMessage {
     messages?: string[];
 }
 
-export type RuleType = 'quality' | 'archive' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'episodeCountMismatch' | 'undeterminedSample';
+export type RuleType = 'quality' | 'archive' | 'executable' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'episodeCountMismatch' | 'undeterminedSample';
 
 export interface RuleMatch {
     type: RuleType;

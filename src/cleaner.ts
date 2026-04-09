@@ -102,6 +102,11 @@ export class QueueCleaner {
                     return { type: 'archive', shouldBlock: this.rules.blockRemovedArchiveReleases };
                 }
 
+                if (this.rules.removeExecutableBlocked && message.includes('executable file')) {
+                    this.log('debug', 'Item matched executable rule', item.title);
+                    return { type: 'executable', shouldBlock: true };
+                }
+
                 if (this.rules.removeNoFilesReleases && message.includes('No files found are eligible')) {
                     this.log('debug', 'Item matched no files rule', item.title);
                     return { type: 'noFiles', shouldBlock: this.rules.blockRemovedNoFilesReleases };

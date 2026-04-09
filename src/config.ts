@@ -21,6 +21,7 @@ const rulesFromEnv: RuleConfig = {
     blockRemovedQualityReleases: parseBooleanEnv('BLOCK_REMOVED_QUALITY_RELEASES'),
     removeArchiveBlocked: parseBooleanEnv('REMOVE_ARCHIVE_BLOCKED'),
     blockRemovedArchiveReleases: parseBooleanEnv('BLOCK_REMOVED_ARCHIVE_RELEASES'),
+    removeExecutableBlocked: parseBooleanEnv('REMOVE_EXECUTABLE_BLOCKED'),
     removeNoFilesReleases: parseBooleanEnv('REMOVE_NO_FILES_RELEASES'),
     blockRemovedNoFilesReleases: parseBooleanEnv('BLOCK_REMOVED_NO_FILES_RELEASES'),
     removeNotAnUpgrade: parseBooleanEnv('REMOVE_NOT_AN_UPGRADE'),

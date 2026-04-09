@@ -23,6 +23,7 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `BLOCK_REMOVED_QUALITY_RELEASES` | `false` | Add quality-blocked items to blocklist |
 | `REMOVE_ARCHIVE_BLOCKED` | `false` | Remove items stuck due to archive files |
 | `BLOCK_REMOVED_ARCHIVE_RELEASES` | `false` | Add archive-blocked items to blocklist |
+| `REMOVE_EXECUTABLE_BLOCKED` | `false` | Blocklist and remove items where Sonarr detects an executable file |
 | `REMOVE_NO_FILES_RELEASES` | `false` | Remove items with no eligible files |
 | `BLOCK_REMOVED_NO_FILES_RELEASES` | `false` | Add no-files items to blocklist |
 | `REMOVE_NOT_AN_UPGRADE` | `false` | Remove items flagged as "Not an upgrade" |
@@ -97,6 +98,7 @@ services:
       BLOCK_REMOVED_QUALITY_RELEASES: 'false'
       REMOVE_ARCHIVE_BLOCKED: 'true'
       BLOCK_REMOVED_ARCHIVE_RELEASES: 'false'
+      REMOVE_EXECUTABLE_BLOCKED: 'true'
       REMOVE_NO_FILES_RELEASES: 'true'
       BLOCK_REMOVED_NO_FILES_RELEASES: 'true'
       REMOVE_NOT_AN_UPGRADE: 'true'

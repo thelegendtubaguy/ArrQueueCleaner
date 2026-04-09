@@ -112,6 +112,32 @@ describe('config', () => {
         });
     });
 
+    it('loads rule flags from the existing environment variables', async () => {
+        process.env.REMOVE_EXECUTABLE_BLOCKED = 'true';
+        process.env.REMOVE_QUALITY_BLOCKED = 'true';
+        process.env.BLOCK_REMOVED_QUALITY_RELEASES = 'true';
+
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removeExecutableBlocked: true,
+            removeQualityBlocked: true,
+            blockRemovedQualityReleases: true
+        });
+    });
+
+    it('keeps supporting the legacy misspelled undetermined sample env var', async () => {
+        process.env.REMOVE_UNDETERMINED_SAMPLE = 'true';
+        process.env.BLOCK_REMOVED_UNDETERMIND_SAMPLE = 'true';
+
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removeUndeterminedSample: true,
+            blockRemovedUndeterminedSampleReleases: true
+        });
+    });
+
     it('exits when an enabled instance is missing an API key', async () => {
         process.env.SONARR_INSTANCES = JSON.stringify([
             { name: 'Broken', host: 'http://broken:8989' }

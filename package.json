@@ -30,7 +30,7 @@
         "ts-jest": "^29.4.9",
         "tsx": "^4.21.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.59.1"
+        "typescript-eslint": "^8.59.2"
     },
     "engines": {
         "node": ">=22"

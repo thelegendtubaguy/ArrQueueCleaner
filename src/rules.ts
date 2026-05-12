@@ -13,6 +13,8 @@ export interface RuleDefinition {
 
 const includesMessage = (fragment: string) => (message: string): boolean => message.includes(fragment);
 
+export const TBA_TITLE_STATUS_MESSAGE = 'Episode has a TBA title and recently aired';
+
 export const DEFAULT_RULE_CONFIG: RuleConfig = {
     removeQualityBlocked: false,
     blockRemovedQualityReleases: false,
@@ -29,7 +31,8 @@ export const DEFAULT_RULE_CONFIG: RuleConfig = {
     removeUndeterminedSample: false,
     blockRemovedUndeterminedSampleReleases: false,
     removePotentiallyDangerousFiles: true,
-    blockPotentiallyDangerousFiles: true
+    blockPotentiallyDangerousFiles: true,
+    refreshTbaTitleSeries: false
 };
 
 export const RULE_DEFINITIONS: readonly RuleDefinition[] = [
@@ -124,6 +127,8 @@ export function buildRulesFromEnv(
             rules[definition.blockKey] = getNormalizedEnvBoolean(blockEnvKeys, rules[definition.blockKey]);
         }
     }
+
+    rules.refreshTbaTitleSeries = parseBooleanEnv('REFRESH_TBA_TITLE_SERIES', rules.refreshTbaTitleSeries);
 
     return rules;
 }

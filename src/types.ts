@@ -15,6 +15,7 @@ export interface RuleConfig {
     blockRemovedUndeterminedSampleReleases: boolean;
     removePotentiallyDangerousFiles: boolean;
     blockPotentiallyDangerousFiles: boolean;
+    refreshTbaTitleSeries: boolean;
 }
 
 export interface SonarrInstanceConfig {
@@ -41,6 +42,7 @@ export interface QueueItem {
     trackedDownloadState: string;
     statusMessages: StatusMessage[];
     downloadId?: string;
+    seriesId?: number;
 }
 
 export interface StatusMessage {

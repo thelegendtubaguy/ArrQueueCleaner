@@ -82,4 +82,13 @@ export class SonarrClient {
         this.log('debug', `Successfully blocked queue item ${id} in Sonarr`);
         this.log('debug', `Block response: ${JSON.stringify(response.data, null, 2)}`);
     }
+
+    async refreshAndScanSeries(seriesId: number): Promise<void> {
+        const response = await this.client.post('/command', {
+            name: 'RefreshSeries',
+            seriesId
+        });
+        this.log('debug', `Started Sonarr refresh and scan for series ${seriesId}`);
+        this.log('debug', `Refresh response: ${JSON.stringify(response.data, null, 2)}`);
+    }
 }

@@ -11,7 +11,8 @@ describe('SonarrClient', () => {
     beforeEach(() => {
         mockAxiosInstance = {
             get: jest.fn(),
-            delete: jest.fn()
+            delete: jest.fn(),
+            post: jest.fn()
         };
         mockedAxios.create.mockReturnValue(mockAxiosInstance);
 
@@ -113,6 +114,19 @@ describe('SonarrClient', () => {
 
             expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
                 params: { removeFromClient: true, blocklist: false }
+            });
+        });
+    });
+
+    describe('refreshAndScanSeries', () => {
+        it('should start a RefreshSeries command', async () => {
+            mockAxiosInstance.post.mockResolvedValue({ data: {} });
+
+            await client.refreshAndScanSeries(456);
+
+            expect(mockAxiosInstance.post).toHaveBeenCalledWith('/command', {
+                name: 'RefreshSeries',
+                seriesId: 456
             });
         });
     });

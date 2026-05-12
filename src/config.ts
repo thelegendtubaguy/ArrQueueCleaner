@@ -6,8 +6,10 @@ import { Config, RuleConfig, SonarrInstanceConfig } from './types';
 
 dotenvConfig();
 
+const TRUE_BOOLEAN_STRINGS = new Set(['true', '1', 'yes', 'y', 'on']);
+
 const parseBooleanEnv = (key: string, defaultValue = false): boolean => (
-    process.env[key] === undefined ? defaultValue : process.env[key] === 'true'
+    process.env[key] === undefined ? defaultValue : coerceBoolean(process.env[key])
 );
 
 const getNormalizedEnvBoolean = (keys: readonly string[], defaultValue = false): boolean => {
@@ -183,13 +185,7 @@ function coerceBoolean(value: unknown): boolean {
     }
 
     if (typeof value === 'string') {
-        const normalized = value.trim().toLowerCase();
-        if (['true', '1', 'yes', 'y', 'on'].includes(normalized)) {
-            return true;
-        }
-        if (['false', '0', 'no', 'n', 'off'].includes(normalized)) {
-            return false;
-        }
+        return TRUE_BOOLEAN_STRINGS.has(value.trim().toLowerCase());
     }
 
     if (typeof value === 'number') {

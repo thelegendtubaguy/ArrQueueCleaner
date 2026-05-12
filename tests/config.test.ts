@@ -6,18 +6,40 @@ jest.mock('dotenv', () => ({ config: jest.fn() }));
 
 const loadConfig = async () => (await import('../src/config')).default;
 
+const CONFIG_ENV_KEYS = [
+    'SONARR_INSTANCES',
+    'SONARR_INSTANCES_FILE',
+    'SONARR_HOST',
+    'SONARR_API_KEY',
+    'REMOVE_QUALITY_BLOCKED',
+    'BLOCK_REMOVED_QUALITY_RELEASES',
+    'REMOVE_ARCHIVE_BLOCKED',
+    'BLOCK_REMOVED_ARCHIVE_RELEASES',
+    'REMOVE_EXECUTABLE_BLOCKED',
+    'REMOVE_NO_FILES_RELEASES',
+    'BLOCK_REMOVED_NO_FILES_RELEASES',
+    'REMOVE_NOT_AN_UPGRADE',
+    'REMOVE_SERIES_ID_MISMATCH',
+    'BLOCK_REMOVED_SERIES_ID_MISMATCH_RELEASES',
+    'REMOVE_EPISODE_COUNT_MISMATCH',
+    'BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES',
+    'REMOVE_UNDETERMINED_SAMPLE',
+    'BLOCK_REMOVED_UNDETERMINED_SAMPLE',
+    'BLOCK_REMOVED_UNDETERMIND_SAMPLE',
+    'REMOVE_POTENTIALLY_DANGEROUS_FILES',
+    'BLOCK_POTENTIALLY_DANGEROUS_FILES',
+    'DRY_RUN'
+] as const;
+const CONFIG_ENV_KEY_SET = new Set<string>(CONFIG_ENV_KEYS);
+
 describe('config', () => {
     const originalEnv = { ...process.env };
 
     beforeEach(() => {
         jest.resetModules();
-        process.env = { ...originalEnv };
-        delete process.env.SONARR_INSTANCES;
-        delete process.env.SONARR_INSTANCES_FILE;
-        delete process.env.SONARR_HOST;
-        delete process.env.SONARR_API_KEY;
-        delete process.env.REMOVE_POTENTIALLY_DANGEROUS_FILES;
-        delete process.env.BLOCK_POTENTIALLY_DANGEROUS_FILES;
+        process.env = Object.fromEntries(
+            Object.entries(originalEnv).filter(([key]) => !CONFIG_ENV_KEY_SET.has(key))
+        );
         jest.spyOn(console, 'error').mockImplementation();
     });
 
@@ -125,6 +147,85 @@ describe('config', () => {
             removeExecutableBlocked: true,
             removeQualityBlocked: true,
             blockRemovedQualityReleases: true
+        });
+    });
+
+    it('loads uppercase and numeric boolean environment values', async () => {
+        process.env.REMOVE_EXECUTABLE_BLOCKED = 'TRUE';
+        process.env.REMOVE_QUALITY_BLOCKED = '1';
+        process.env.BLOCK_REMOVED_QUALITY_RELEASES = 'yes';
+        process.env.DRY_RUN = 'on';
+
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removeExecutableBlocked: true,
+            removeQualityBlocked: true,
+            blockRemovedQualityReleases: true
+        });
+        expect(config.dryRun).toBe(true);
+    });
+
+    it('keeps false-like boolean environment values disabled', async () => {
+        process.env.REMOVE_EXECUTABLE_BLOCKED = 'FALSE';
+        process.env.REMOVE_QUALITY_BLOCKED = '0';
+        process.env.BLOCK_REMOVED_QUALITY_RELEASES = 'no';
+        process.env.DRY_RUN = 'off';
+
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removeExecutableBlocked: false,
+            removeQualityBlocked: false,
+            blockRemovedQualityReleases: false
+        });
+        expect(config.dryRun).toBe(false);
+    });
+
+    it('does not enable top-level booleans for unrecognized non-empty strings', async () => {
+        process.env.REMOVE_EXECUTABLE_BLOCKED = 'enabled';
+        process.env.REMOVE_QUALITY_BLOCKED = '2';
+        process.env.BLOCK_REMOVED_QUALITY_RELEASES = 'block';
+        process.env.DRY_RUN = 'sure';
+
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removeExecutableBlocked: false,
+            removeQualityBlocked: false,
+            blockRemovedQualityReleases: false
+        });
+        expect(config.dryRun).toBe(false);
+    });
+
+    it('coerces structured rule override strings like environment booleans', async () => {
+        process.env.SONARR_INSTANCES = JSON.stringify([
+            {
+                name: 'HD Shows',
+                host: 'http://hd-sonarr:8989',
+                apiKey: 'hd-key',
+                rules: {
+                    removeQualityBlocked: 'YES',
+                    blockRemovedQualityReleases: '0',
+                    removeArchiveBlocked: 'on',
+                    blockRemovedArchiveReleases: 'OFF',
+                    removeNoFilesReleases: 1,
+                    blockRemovedNoFilesReleases: 0,
+                    removeExecutableBlocked: 'enabled'
+                }
+            }
+        ]);
+
+        const config = await loadConfig();
+
+        expect(config.sonarrInstances[0].rules).toEqual({
+            removeQualityBlocked: true,
+            blockRemovedQualityReleases: false,
+            removeArchiveBlocked: true,
+            blockRemovedArchiveReleases: false,
+            removeExecutableBlocked: false,
+            removeNoFilesReleases: true,
+            blockRemovedNoFilesReleases: false
         });
     });
 

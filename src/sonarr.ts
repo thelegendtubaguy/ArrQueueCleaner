@@ -72,11 +72,11 @@ export class SonarrClient {
         this.log('debug', `Remove response: ${JSON.stringify(response.data, null, 2)}`);
     }
 
-    async blockRelease(id: number): Promise<void> {
+    async blockRelease(id: number, removeFromClient = true): Promise<void> {
         const response = await this.client.delete(`/queue/${id}`, {
-            params: { removeFromClient: true, blocklist: true }
+            params: { removeFromClient, blocklist: true }
         });
-        this.log('debug', `Successfully blocked and removed queue item ${id} from Sonarr`);
+        this.log('debug', `Successfully blocked queue item ${id} in Sonarr`);
         this.log('debug', `Block response: ${JSON.stringify(response.data, null, 2)}`);
     }
 }

@@ -7,17 +7,20 @@ export class SonarrClient {
     private logLevel: string;
 
     constructor(host: string, apiKey: string, logLevel = 'info') {
-        this.host = host;
         this.logLevel = logLevel;
         
+        const normalizedHost = host.trim().replace(/\/+$/, '');
+
         // Validate host URL to prevent data: URI attacks
-        const url = new URL(host);
+        const url = new URL(normalizedHost);
         if (!['http:', 'https:'].includes(url.protocol)) {
             throw new Error(`Invalid protocol: ${url.protocol}. Only HTTP and HTTPS are allowed.`);
         }
+
+        this.host = normalizedHost;
         
         this.client = axios.create({
-            baseURL: `${host}/api/v3`,
+            baseURL: `${this.host}/api/v3`,
             headers: { 'X-Api-Key': apiKey },
             maxContentLength: 50 * 1024 * 1024, // 50MB limit
             maxBodyLength: 50 * 1024 * 1024,    // 50MB limit

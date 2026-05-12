@@ -1,6 +1,6 @@
 import { QueueCleaner, QueueCleanerOptions } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createExecutableBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem, createPotentiallyDangerousFileItem } from './test-utils';
+import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createExecutableBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem, createPotentiallyDangerousFileItem, createTbaTitleItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -19,7 +19,8 @@ describe('QueueCleaner', () => {
         mockSonarrClient = {
             getQueue: jest.fn(),
             removeFromQueue: jest.fn(),
-            blockRelease: jest.fn()
+            blockRelease: jest.fn(),
+            refreshAndScanSeries: jest.fn()
         } as any;
         MockedSonarrClient.mockImplementation(() => mockSonarrClient);
 
@@ -332,6 +333,88 @@ describe('QueueCleaner', () => {
 
                 expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
                 expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('TBA title items', () => {
+            it('should refresh and scan the series when enabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ refreshTbaTitleSeries: true })
+                });
+                const items = [createTbaTitleItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.refreshAndScanSeries).toHaveBeenCalledWith(456);
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+
+            it('should skip TBA title items when disabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ refreshTbaTitleSeries: false })
+                });
+                const items = [createTbaTitleItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.refreshAndScanSeries).not.toHaveBeenCalled();
+            });
+
+            it('should throttle TBA title refreshes for the same series to 10 minutes', async () => {
+                const nowSpy = jest.spyOn(Date, 'now')
+                    .mockReturnValueOnce(1_000)
+                    .mockReturnValueOnce(5 * 60 * 1000)
+                    .mockReturnValueOnce(11 * 60 * 1000);
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ refreshTbaTitleSeries: true })
+                });
+
+                mockSonarrClient.getQueue.mockResolvedValue([createTbaTitleItem()]);
+
+                await cleaner.cleanQueue();
+                await cleaner.cleanQueue();
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.refreshAndScanSeries).toHaveBeenCalledTimes(2);
+                expect(mockSonarrClient.refreshAndScanSeries).toHaveBeenNthCalledWith(1, 456);
+                expect(mockSonarrClient.refreshAndScanSeries).toHaveBeenNthCalledWith(2, 456);
+
+                nowSpy.mockRestore();
+            });
+
+            it('should process one TBA title refresh per series per run', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ refreshTbaTitleSeries: true })
+                });
+                const items = [
+                    createTbaTitleItem({ id: 1, downloadId: 'one' }),
+                    createTbaTitleItem({ id: 2, downloadId: 'two' })
+                ];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.refreshAndScanSeries).toHaveBeenCalledTimes(1);
+                expect(mockSonarrClient.refreshAndScanSeries).toHaveBeenCalledWith(456);
+            });
+
+            it('should skip TBA title items without a seriesId', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({ refreshTbaTitleSeries: true })
+                });
+                const items = [createTbaTitleItem({ seriesId: undefined })];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.refreshAndScanSeries).not.toHaveBeenCalled();
             });
         });
 

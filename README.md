@@ -35,6 +35,7 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `BLOCK_REMOVED_UNDETERMINED_SAMPLE` | `false` | Add undetermined sample items to blocklist |
 | `REMOVE_POTENTIALLY_DANGEROUS_FILES` | `true` | Remove items where Sonarr reports a potentially dangerous file |
 | `BLOCK_POTENTIALLY_DANGEROUS_FILES` | `true` | Add potentially dangerous file items to blocklist |
+| `REFRESH_TBA_TITLE_SERIES` | `false` | Refresh and scan the series at most every 10 minutes when Sonarr reports `Episode has a TBA title and recently aired` |
 | `DRY_RUN` | `false` | Log actions without actually removing/blocking items |
 | `SCHEDULE` | `*/5 * * * *` | Cron schedule (every 5 minutes) |
 | `LOG_LEVEL` | `info` | Logging level |
@@ -112,6 +113,7 @@ services:
       BLOCK_REMOVED_UNDETERMINED_SAMPLE: 'false'
       REMOVE_POTENTIALLY_DANGEROUS_FILES: 'true'
       BLOCK_POTENTIALLY_DANGEROUS_FILES: 'true'
+      REFRESH_TBA_TITLE_SERIES: 'false'
       DRY_RUN: 'false'
       SCHEDULE: '*/5 * * * *'
       LOG_LEVEL: 'info'

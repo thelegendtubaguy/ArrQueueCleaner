@@ -1,5 +1,5 @@
 import { SonarrClient } from './sonarr';
-import { RULE_DEFINITIONS } from './rules';
+import { RULE_DEFINITIONS, TBA_TITLE_STATUS_MESSAGE } from './rules';
 import { QueueItem, RuleConfig, RuleMatch, RuleType, SonarrInstanceConfig } from './types';
 
 export interface QueueCleanerOptions {
@@ -15,6 +15,8 @@ export class QueueCleaner {
     private readonly dryRun: boolean;
     private readonly logLevel: string;
     private readonly sonarr: SonarrClient;
+    private readonly tbaTitleRefreshIntervalMs = 10 * 60 * 1000;
+    private readonly lastTbaTitleRefreshBySeriesId = new Map<number, number>();
 
     constructor(options: QueueCleanerOptions) {
         this.instance = options.instance;
@@ -46,6 +48,8 @@ export class QueueCleaner {
             const itemsToProcess: { item: QueueItem; rules: RuleMatch[] }[] = [];
 
             for (const item of queue) {
+                await this.processTbaTitleRefresh(item);
+
                 const rules = this.evaluateRules(item);
                 if (rules.length > 0) {
                     itemsToProcess.push({ item, rules });
@@ -91,11 +95,57 @@ export class QueueCleaner {
         }
     }
 
+    private shouldEvaluateItem(item: QueueItem): boolean {
+        return item.status === 'completed' &&
+            item.trackedDownloadStatus === 'warning' &&
+            (item.trackedDownloadState === 'importPending' || item.trackedDownloadState === 'importBlocked') &&
+            !!item.statusMessages?.length;
+    }
+
+    private hasStatusMessage(item: QueueItem, expectedMessage: string): boolean {
+        return item.statusMessages?.some(statusMessage =>
+            statusMessage.messages?.some(message => message.includes(expectedMessage))
+        ) ?? false;
+    }
+
+    private async processTbaTitleRefresh(item: QueueItem): Promise<void> {
+        if (!this.rules.refreshTbaTitleSeries || !this.shouldEvaluateItem(item) || !this.hasStatusMessage(item, TBA_TITLE_STATUS_MESSAGE)) {
+            return;
+        }
+
+        if (typeof item.seriesId !== 'number') {
+            this.log('warn', `Unable to refresh TBA title item without seriesId: ${item.title}`);
+            return;
+        }
+
+        const now = Date.now();
+        const lastRefresh = this.lastTbaTitleRefreshBySeriesId.get(item.seriesId);
+        if (lastRefresh !== undefined && now - lastRefresh < this.tbaTitleRefreshIntervalMs) {
+            this.log('debug', 'Skipping TBA title refresh; series was refreshed recently', {
+                seriesId: item.seriesId,
+                title: item.title
+            });
+            return;
+        }
+
+        try {
+            this.lastTbaTitleRefreshBySeriesId.set(item.seriesId, now);
+
+            if (this.dryRun) {
+                this.log('info', `[DRY RUN] Would refresh and scan series ${item.seriesId} for TBA title item: ${item.title}`);
+                return;
+            }
+
+            await this.sonarr.refreshAndScanSeries(item.seriesId);
+            this.log('info', `Refreshed and scanned series ${item.seriesId} for TBA title item: ${item.title}`);
+        } catch (error) {
+            this.lastTbaTitleRefreshBySeriesId.delete(item.seriesId);
+            this.log('error', `Error refreshing series ${item.seriesId} for ${item.title}`, (error as Error).message);
+        }
+    }
+
     private evaluateRules(item: QueueItem): RuleMatch[] {
-        if (item.status !== 'completed' ||
-            item.trackedDownloadStatus !== 'warning' ||
-            (item.trackedDownloadState !== 'importPending' && item.trackedDownloadState !== 'importBlocked') ||
-            !item.statusMessages?.length) {
+        if (!this.shouldEvaluateItem(item)) {
             return [];
         }
 

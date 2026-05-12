@@ -96,3 +96,12 @@ export const createPotentiallyDangerousFileItem = (overrides: Partial<QueueItem>
         }],
         ...overrides
     });
+
+export const createTbaTitleItem = (overrides: Partial<QueueItem> = {}): QueueItem =>
+    createMockQueueItem({
+        seriesId: 456,
+        statusMessages: [{
+            messages: ['Episode has a TBA title and recently aired']
+        }],
+        ...overrides
+    });

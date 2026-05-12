@@ -28,6 +28,7 @@ const CONFIG_ENV_KEYS = [
     'BLOCK_REMOVED_UNDETERMIND_SAMPLE',
     'REMOVE_POTENTIALLY_DANGEROUS_FILES',
     'BLOCK_POTENTIALLY_DANGEROUS_FILES',
+    'REFRESH_TBA_TITLE_SERIES',
     'DRY_RUN'
 ] as const;
 const CONFIG_ENV_KEY_SET = new Set<string>(CONFIG_ENV_KEYS);
@@ -168,13 +169,15 @@ describe('config', () => {
         process.env.REMOVE_EXECUTABLE_BLOCKED = 'true';
         process.env.REMOVE_QUALITY_BLOCKED = 'true';
         process.env.BLOCK_REMOVED_QUALITY_RELEASES = 'true';
+        process.env.REFRESH_TBA_TITLE_SERIES = 'true';
 
         const config = await loadConfig();
 
         expect(config.rules).toMatchObject({
             removeExecutableBlocked: true,
             removeQualityBlocked: true,
-            blockRemovedQualityReleases: true
+            blockRemovedQualityReleases: true,
+            refreshTbaTitleSeries: true
         });
     });
 
@@ -239,7 +242,8 @@ describe('config', () => {
                     blockRemovedArchiveReleases: 'OFF',
                     removeNoFilesReleases: 1,
                     blockRemovedNoFilesReleases: 0,
-                    removeExecutableBlocked: 'enabled'
+                    removeExecutableBlocked: 'enabled',
+                    refreshTbaTitleSeries: 'true'
                 }
             }
         ]);
@@ -253,7 +257,8 @@ describe('config', () => {
             blockRemovedArchiveReleases: false,
             removeExecutableBlocked: false,
             removeNoFilesReleases: true,
-            blockRemovedNoFilesReleases: false
+            blockRemovedNoFilesReleases: false,
+            refreshTbaTitleSeries: true
         });
     });
 

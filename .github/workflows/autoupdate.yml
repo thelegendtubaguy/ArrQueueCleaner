@@ -1,0 +1,28 @@
+name: Auto Update Pull Requests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types:
+      - auto_merge_enabled
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  autoupdate:
+    name: Update auto-merge PR branches
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Update pull request branches
+        uses: docker://chinthakagodawita/autoupdate-action:v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_FILTER: auto_merge
+          PR_READY_STATE: ready_for_review
+          MERGE_CONFLICT_ACTION: ignore

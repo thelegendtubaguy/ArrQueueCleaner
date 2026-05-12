@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
@@ -6,8 +6,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN corepack enable && \
-    corepack prepare "$(node -p 'require("./package.json").packageManager')" --activate && \
+RUN npm install --global "$(node -p 'require("./package.json").packageManager')" && \
     pnpm install --frozen-lockfile
 
 # Copy source and build
@@ -16,7 +15,7 @@ COPY src/ ./src/
 RUN pnpm build && \
     pnpm prune --prod
 
-FROM node:22-alpine AS runtime
+FROM node:26-alpine AS runtime
 
 ENV NODE_ENV=production
 

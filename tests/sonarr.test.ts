@@ -25,6 +25,31 @@ describe('SonarrClient', () => {
         jest.restoreAllMocks();
     });
 
+    describe('constructor', () => {
+        it.each([
+            ['without trailing slashes', 'http://localhost:8989', 'http://localhost:8989/api/v3'],
+            ['with a trailing slash', 'http://localhost:8989/', 'http://localhost:8989/api/v3'],
+            ['with multiple trailing slashes', 'http://localhost:8989///', 'http://localhost:8989/api/v3'],
+            ['with a path and trailing slashes', 'https://localhost:8989/sonarr///', 'https://localhost:8989/sonarr/api/v3']
+        ])('sets axios baseURL %s', (_caseName, host, baseURL) => {
+            mockedAxios.create.mockClear();
+
+            new SonarrClient(host, 'test-key', 'info');
+
+            expect(mockedAxios.create).toHaveBeenCalledWith(expect.objectContaining({
+                baseURL
+            }));
+        });
+
+        it('rejects non-http protocols before creating an axios client', () => {
+            mockedAxios.create.mockClear();
+
+            expect(() => new SonarrClient('data:text/plain,hello', 'test-key', 'info'))
+                .toThrow('Invalid protocol: data:. Only HTTP and HTTPS are allowed.');
+            expect(mockedAxios.create).not.toHaveBeenCalled();
+        });
+    });
+
     describe('getQueue', () => {
         it('should return queue records', async () => {
             const mockData = { records: [{ id: 1, title: 'test' }] };

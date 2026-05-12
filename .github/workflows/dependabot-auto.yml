@@ -1,4 +1,4 @@
-name: Dependabot auto-approve and merge
+name: Auto-approve trusted PRs and Dependabot dev updates
 
 on:
   pull_request:
@@ -8,26 +8,26 @@ permissions:
   pull-requests: write
 
 jobs:
-  dependabot:
-    name: Auto approve and merge Dependabot dev updates
+  auto-approve-and-merge:
+    name: Auto approve trusted PRs and Dependabot dev updates
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
     steps:
       - name: Dependabot metadata
         id: metadata
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
         uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Approve dev dependency PR
-        if: contains(steps.metadata.outputs.dependency-type, 'development')
+      - name: Approve trusted owner and dev dependency PRs
+        if: github.event.pull_request.user.login == 'thelegendtubaguy' || (github.event.pull_request.user.login == 'dependabot[bot]' && contains(steps.metadata.outputs.dependency-type, 'development'))
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable auto-merge for dev dependency patch/minor updates
-        if: contains(steps.metadata.outputs.dependency-type, 'development') && (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor')
+        if: github.event.pull_request.user.login == 'dependabot[bot]' && contains(steps.metadata.outputs.dependency-type, 'development') && (steps.metadata.outputs.update-type == 'version-update:semver-patch' || steps.metadata.outputs.update-type == 'version-update:semver-minor')
         run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}

@@ -57,17 +57,51 @@ describe('SonarrClient', () => {
 
             const result = await client.getQueue();
 
-            expect(mockAxiosInstance.get).toHaveBeenCalledWith('/queue');
+            expect(mockAxiosInstance.get).toHaveBeenCalledWith('/queue', { params: { page: 1, pageSize: 100 } });
+            expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
             expect(result).toEqual(mockData.records);
         });
 
-        it('should return data directly if no records property', async () => {
+        it('should collect all queue records across pages', async () => {
+            mockAxiosInstance.get
+                .mockResolvedValueOnce({ data: { records: [{ id: 1, title: 'page 1' }], totalRecords: 3 } })
+                .mockResolvedValueOnce({ data: { records: [{ id: 2, title: 'page 2' }, { id: 3, title: 'page 2' }], totalRecords: 3 } });
+
+            const result = await client.getQueue();
+
+            expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(1, '/queue', { params: { page: 1, pageSize: 100 } });
+            expect(mockAxiosInstance.get).toHaveBeenNthCalledWith(2, '/queue', { params: { page: 2, pageSize: 100 } });
+            expect(result).toEqual([
+                { id: 1, title: 'page 1' },
+                { id: 2, title: 'page 2' },
+                { id: 3, title: 'page 2' }
+            ]);
+        });
+
+        it('should return data directly for non-paginated array responses', async () => {
             const mockData = [{ id: 1, title: 'test' }];
             mockAxiosInstance.get.mockResolvedValue({ data: mockData });
 
             const result = await client.getQueue();
 
+            expect(mockAxiosInstance.get).toHaveBeenCalledWith('/queue', { params: { page: 1, pageSize: 100 } });
             expect(result).toEqual(mockData);
+        });
+
+        it('should return an empty array when there are no queue records', async () => {
+            const mockData = { records: [], totalRecords: 0 };
+            mockAxiosInstance.get.mockResolvedValue({ data: mockData });
+
+            const result = await client.getQueue();
+
+            expect(mockAxiosInstance.get).toHaveBeenCalledTimes(1);
+            expect(result).toEqual([]);
+        });
+
+        it('should reject unexpected queue response shapes', async () => {
+            mockAxiosInstance.get.mockResolvedValue({ data: { totalRecords: 1 } });
+
+            await expect(client.getQueue()).rejects.toThrow('Unexpected Sonarr queue response: missing records array');
         });
     });
 
@@ -91,6 +125,16 @@ describe('SonarrClient', () => {
 
             expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
                 params: { removeFromClient: true, blocklist: true }
+            });
+        });
+
+        it('should support blocklisting without removing from the download client', async () => {
+            mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+
+            await client.blockRelease(123, false);
+
+            expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
+                params: { removeFromClient: false, blocklist: true }
             });
         });
     });

@@ -1,6 +1,6 @@
 import { QueueCleaner, QueueCleanerOptions } from '../src/cleaner';
 import { SonarrClient } from '../src/sonarr';
-import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createExecutableBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem } from './test-utils';
+import { createMockInstance, createRuleConfig, createMockQueueItem, createQualityBlockedItem, createArchiveBlockedItem, createExecutableBlockedItem, createNoFilesBlockedItem, createNotAnUpgradeItem, createSeriesIdMismatchItem, createEpisodeCountMismatchItem, createUndeterminedSampleItem, createPotentiallyDangerousFileItem } from './test-utils';
 
 jest.mock('../src/sonarr');
 const MockedSonarrClient = SonarrClient as jest.MockedClass<typeof SonarrClient>;
@@ -267,6 +267,71 @@ describe('QueueCleaner', () => {
 
                 expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
                 expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+            });
+        });
+
+        describe('potentially dangerous file items', () => {
+            it('should block and remove potentially dangerous file items by default', async () => {
+                const cleaner = createCleaner();
+                const items = [createPotentiallyDangerousFileItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(123);
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+            });
+
+            it('should remove potentially dangerous file items when only removal is enabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
+                        removePotentiallyDangerousFiles: true,
+                        blockPotentiallyDangerousFiles: false
+                    })
+                });
+                const items = [createPotentiallyDangerousFileItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledWith(123);
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
+            });
+
+            it('should block potentially dangerous file items when only blocklist is enabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
+                        removePotentiallyDangerousFiles: false,
+                        blockPotentiallyDangerousFiles: true
+                    })
+                });
+                const items = [createPotentiallyDangerousFileItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(123, false);
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+            });
+
+            it('should skip potentially dangerous file items when disabled', async () => {
+                const cleaner = createCleaner({
+                    rules: createRuleConfig({
+                        removePotentiallyDangerousFiles: false,
+                        blockPotentiallyDangerousFiles: false
+                    })
+                });
+                const items = [createPotentiallyDangerousFileItem()];
+
+                mockSonarrClient.getQueue.mockResolvedValue(items);
+
+                await cleaner.cleanQueue();
+
+                expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+                expect(mockSonarrClient.blockRelease).not.toHaveBeenCalled();
             });
         });
 

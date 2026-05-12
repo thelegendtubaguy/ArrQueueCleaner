@@ -389,18 +389,18 @@ describe('QueueCleaner', () => {
 
             const sharedDownloadId = 'season_pack_download_123';
             const items = [
-                createSeriesIdMismatchItem({ 
-                    id: 1, 
+                createSeriesIdMismatchItem({
+                    id: 1,
                     downloadId: sharedDownloadId,
                     title: 'The.Prince.S01.2160p.HMAX.WEB-DL.DDP2.0.H.265-BiOMA'
                 }),
-                createSeriesIdMismatchItem({ 
-                    id: 2, 
+                createSeriesIdMismatchItem({
+                    id: 2,
                     downloadId: sharedDownloadId,
                     title: 'The.Prince.S01.2160p.HMAX.WEB-DL.DDP2.0.H.265-BiOMA'
                 }),
-                createSeriesIdMismatchItem({ 
-                    id: 3, 
+                createSeriesIdMismatchItem({
+                    id: 3,
                     downloadId: sharedDownloadId,
                     title: 'The.Prince.S01.2160p.HMAX.WEB-DL.DDP2.0.H.265-BiOMA'
                 })
@@ -412,6 +412,105 @@ describe('QueueCleaner', () => {
 
             // Should only process once despite 3 matching items with same downloadId
             expect(mockSonarrClient.removeFromQueue).toHaveBeenCalledTimes(1);
+        });
+
+        it('should block a grouped download when any same-downloadId item matches a force-block rule', async () => {
+            const cleaner = createCleaner({
+                rules: createRuleConfig({
+                    removeQualityBlocked: true,
+                    removeExecutableBlocked: true
+                })
+            });
+
+            const sharedDownloadId = 'mixed_rule_download_123';
+            const items = [
+                createMockQueueItem({
+                    id: 1,
+                    downloadId: sharedDownloadId,
+                    statusMessages: [{ messages: ['upgrade for existing episode'] }]
+                }),
+                createMockQueueItem({
+                    id: 2,
+                    downloadId: sharedDownloadId,
+                    statusMessages: [{ messages: ['Caution: Found executable file'] }]
+                })
+            ];
+
+            mockSonarrClient.getQueue.mockResolvedValue(items);
+
+            await cleaner.cleanQueue();
+
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledTimes(1);
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(1);
+            expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+        });
+
+        it('should block a grouped download when the first same-downloadId item has a later force-block match', async () => {
+            const cleaner = createCleaner({
+                rules: createRuleConfig({
+                    removeQualityBlocked: true,
+                    removeExecutableBlocked: true
+                })
+            });
+
+            const sharedDownloadId = 'mixed_first_item_download_123';
+            const items = [
+                createMockQueueItem({
+                    id: 1,
+                    downloadId: sharedDownloadId,
+                    statusMessages: [{
+                        messages: [
+                            'upgrade for existing episode',
+                            'Caution: Found executable file'
+                        ]
+                    }]
+                }),
+                createMockQueueItem({
+                    id: 2,
+                    downloadId: sharedDownloadId,
+                    statusMessages: [{ messages: ['upgrade for existing episode'] }]
+                })
+            ];
+
+            mockSonarrClient.getQueue.mockResolvedValue(items);
+
+            await cleaner.cleanQueue();
+
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledTimes(1);
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(1);
+            expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
+        });
+
+        it('should block a grouped download when any same-downloadId item matches a block-enabled rule', async () => {
+            const cleaner = createCleaner({
+                rules: createRuleConfig({
+                    removeNotAnUpgrade: true,
+                    removeArchiveBlocked: true,
+                    blockRemovedArchiveReleases: true
+                })
+            });
+
+            const sharedDownloadId = 'mixed_block_enabled_download_123';
+            const items = [
+                createMockQueueItem({
+                    id: 1,
+                    downloadId: sharedDownloadId,
+                    statusMessages: [{ messages: ['Not an upgrade'] }]
+                }),
+                createMockQueueItem({
+                    id: 2,
+                    downloadId: sharedDownloadId,
+                    statusMessages: [{ messages: ['Found archive file, might need to be extracted'] }]
+                })
+            ];
+
+            mockSonarrClient.getQueue.mockResolvedValue(items);
+
+            await cleaner.cleanQueue();
+
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledTimes(1);
+            expect(mockSonarrClient.blockRelease).toHaveBeenCalledWith(1);
+            expect(mockSonarrClient.removeFromQueue).not.toHaveBeenCalled();
         });
 
         it('should remove undetermined sample items when enabled', async () => {

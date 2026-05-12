@@ -1,6 +1,6 @@
 import { SonarrClient } from './sonarr';
 import { RULE_DEFINITIONS } from './rules';
-import { QueueItem, RuleMatch, RuleConfig, SonarrInstanceConfig } from './types';
+import { QueueItem, RuleConfig, RuleMatch, RuleType, SonarrInstanceConfig } from './types';
 
 export interface QueueCleanerOptions {
     instance: SonarrInstanceConfig;
@@ -43,26 +43,41 @@ export class QueueCleaner {
 
         try {
             const queue = await this.sonarr.getQueue();
-            const itemsToProcess: { item: QueueItem; rule: RuleMatch }[] = [];
+            const itemsToProcess: { item: QueueItem; rules: RuleMatch[] }[] = [];
 
             for (const item of queue) {
-                const rule = this.evaluateRules(item);
-                if (rule) {
-                    itemsToProcess.push({ item, rule });
+                const rules = this.evaluateRules(item);
+                if (rules.length > 0) {
+                    itemsToProcess.push({ item, rules });
                 }
             }
 
             // Group by downloadId to handle season packs
-            const downloadGroups = new Map<string, { item: QueueItem; rule: RuleMatch }>();
+            const downloadGroups = new Map<string, { item: QueueItem; ruleTypes: Set<RuleType>; shouldBlock: boolean }>();
             for (const entry of itemsToProcess) {
                 const downloadId = entry.item.downloadId || entry.item.id.toString();
-                if (!downloadGroups.has(downloadId)) {
-                    downloadGroups.set(downloadId, entry);
+                const existingGroup = downloadGroups.get(downloadId);
+                const group = existingGroup ?? {
+                    item: entry.item,
+                    ruleTypes: new Set<RuleType>(),
+                    shouldBlock: false
+                };
+
+                for (const rule of entry.rules) {
+                    group.ruleTypes.add(rule.type);
+                    group.shouldBlock = group.shouldBlock || rule.shouldBlock;
+                }
+
+                if (!existingGroup) {
+                    downloadGroups.set(downloadId, group);
                 }
             }
 
-            for (const { item, rule } of downloadGroups.values()) {
-                await this.processItem(item, rule);
+            for (const { item, ruleTypes, shouldBlock } of downloadGroups.values()) {
+                await this.processItem(item, {
+                    type: Array.from(ruleTypes).join(', '),
+                    shouldBlock
+                });
             }
 
             if (downloadGroups.size > 0) {
@@ -73,12 +88,12 @@ export class QueueCleaner {
         }
     }
 
-    private evaluateRules(item: QueueItem): RuleMatch | null {
+    private evaluateRules(item: QueueItem): RuleMatch[] {
         if (item.status !== 'completed' ||
             item.trackedDownloadStatus !== 'warning' ||
             (item.trackedDownloadState !== 'importPending' && item.trackedDownloadState !== 'importBlocked') ||
             !item.statusMessages?.length) {
-            return null;
+            return [];
         }
 
         this.log('debug', 'Evaluating rules for item', {
@@ -89,6 +104,8 @@ export class QueueCleaner {
             statusMessages: item.statusMessages
         });
 
+        const matches = new Map<RuleType, RuleMatch>();
+
         for (const msg of item.statusMessages) {
             if (!msg.messages?.length) { continue; }
 
@@ -98,20 +115,22 @@ export class QueueCleaner {
                         continue;
                     }
 
-                    this.log('debug', `Item matched ${definition.type} rule`, item.title);
+                    if (!matches.has(definition.type)) {
+                        this.log('debug', `Item matched ${definition.type} rule`, item.title);
+                    }
 
-                    return {
+                    matches.set(definition.type, {
                         type: definition.type,
                         shouldBlock: definition.forceBlock || (definition.blockKey ? this.rules[definition.blockKey] : false)
-                    };
+                    });
                 }
             }
         }
 
-        return null;
+        return Array.from(matches.values());
     }
 
-    private async processItem(item: QueueItem, rule: RuleMatch): Promise<void> {
+    private async processItem(item: QueueItem, rule: { type: string; shouldBlock: boolean }): Promise<void> {
         try {
             if (this.dryRun) {
                 if (rule.shouldBlock) {

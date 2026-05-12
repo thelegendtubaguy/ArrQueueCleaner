@@ -53,18 +53,20 @@ export class QueueCleaner {
             }
 
             // Group by downloadId to handle season packs
-            const downloadGroups = new Map<string, { item: QueueItem; ruleTypes: Set<RuleType>; shouldBlock: boolean }>();
+            const downloadGroups = new Map<string, { item: QueueItem; ruleTypes: Set<RuleType>; shouldRemove: boolean; shouldBlock: boolean }>();
             for (const entry of itemsToProcess) {
                 const downloadId = entry.item.downloadId || entry.item.id.toString();
                 const existingGroup = downloadGroups.get(downloadId);
                 const group = existingGroup ?? {
                     item: entry.item,
                     ruleTypes: new Set<RuleType>(),
+                    shouldRemove: false,
                     shouldBlock: false
                 };
 
                 for (const rule of entry.rules) {
                     group.ruleTypes.add(rule.type);
+                    group.shouldRemove = group.shouldRemove || rule.shouldRemove;
                     group.shouldBlock = group.shouldBlock || rule.shouldBlock;
                 }
 
@@ -73,9 +75,10 @@ export class QueueCleaner {
                 }
             }
 
-            for (const { item, ruleTypes, shouldBlock } of downloadGroups.values()) {
+            for (const { item, ruleTypes, shouldRemove, shouldBlock } of downloadGroups.values()) {
                 await this.processItem(item, {
                     type: Array.from(ruleTypes).join(', '),
+                    shouldRemove,
                     shouldBlock
                 });
             }
@@ -111,7 +114,11 @@ export class QueueCleaner {
 
             for (const message of msg.messages) {
                 for (const definition of RULE_DEFINITIONS) {
-                    if (!this.rules[definition.enabledKey] || !definition.matches(message)) {
+                    const shouldRemove = this.rules[definition.enabledKey];
+                    const shouldBlock = definition.forceBlock || (definition.blockKey ? this.rules[definition.blockKey] : false);
+                    const ruleEnabled = shouldRemove || (definition.allowBlockOnly && shouldBlock);
+
+                    if (!ruleEnabled || !definition.matches(message)) {
                         continue;
                     }
 
@@ -121,7 +128,8 @@ export class QueueCleaner {
 
                     matches.set(definition.type, {
                         type: definition.type,
-                        shouldBlock: definition.forceBlock || (definition.blockKey ? this.rules[definition.blockKey] : false)
+                        shouldRemove,
+                        shouldBlock
                     });
                 }
             }
@@ -130,20 +138,33 @@ export class QueueCleaner {
         return Array.from(matches.values());
     }
 
-    private async processItem(item: QueueItem, rule: { type: string; shouldBlock: boolean }): Promise<void> {
+    private describeAction(rule: { shouldRemove: boolean; shouldBlock: boolean }): string {
+        if (rule.shouldBlock && rule.shouldRemove) {
+            return 'block and remove';
+        }
+
+        if (rule.shouldBlock) {
+            return 'block';
+        }
+
+        return 'remove';
+    }
+
+    private async processItem(item: QueueItem, rule: { type: string; shouldRemove: boolean; shouldBlock: boolean }): Promise<void> {
         try {
             if (this.dryRun) {
-                if (rule.shouldBlock) {
-                    this.log('info', `[DRY RUN] Would block and remove (${rule.type}): ${item.title}`);
-                } else {
-                    this.log('info', `[DRY RUN] Would remove (${rule.type}): ${item.title}`);
-                }
+                this.log('info', `[DRY RUN] Would ${this.describeAction(rule)} (${rule.type}): ${item.title}`);
                 return;
             }
 
             if (rule.shouldBlock) {
-                await this.sonarr.blockRelease(item.id);
-                this.log('info', `Blocked and removed (${rule.type}): ${item.title}`);
+                if (rule.shouldRemove) {
+                    await this.sonarr.blockRelease(item.id);
+                    this.log('info', `Blocked and removed (${rule.type}): ${item.title}`);
+                } else {
+                    await this.sonarr.blockRelease(item.id, false);
+                    this.log('info', `Blocked (${rule.type}): ${item.title}`);
+                }
             } else {
                 await this.sonarr.removeFromQueue(item.id);
                 this.log('info', `Removed (${rule.type}): ${item.title}`);

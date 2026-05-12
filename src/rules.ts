@@ -7,6 +7,7 @@ export interface RuleDefinition {
     blockKey?: keyof RuleConfig;
     blockEnv?: string | readonly string[];
     forceBlock?: boolean;
+    allowBlockOnly?: boolean;
     matches: (message: string) => boolean;
 }
 
@@ -26,7 +27,9 @@ export const DEFAULT_RULE_CONFIG: RuleConfig = {
     removeEpisodeCountMismatch: false,
     blockRemovedEpisodeCountMismatchReleases: false,
     removeUndeterminedSample: false,
-    blockRemovedUndeterminedSampleReleases: false
+    blockRemovedUndeterminedSampleReleases: false,
+    removePotentiallyDangerousFiles: true,
+    blockPotentiallyDangerousFiles: true
 };
 
 export const RULE_DEFINITIONS: readonly RuleDefinition[] = [
@@ -93,23 +96,32 @@ export const RULE_DEFINITIONS: readonly RuleDefinition[] = [
             'BLOCK_REMOVED_UNDETERMIND_SAMPLE'
         ],
         matches: includesMessage('Unable to determine if file is a sample')
+    },
+    {
+        type: 'potentiallyDangerousFile',
+        enabledKey: 'removePotentiallyDangerousFiles',
+        enabledEnv: 'REMOVE_POTENTIALLY_DANGEROUS_FILES',
+        blockKey: 'blockPotentiallyDangerousFiles',
+        blockEnv: 'BLOCK_POTENTIALLY_DANGEROUS_FILES',
+        allowBlockOnly: true,
+        matches: includesMessage('Caution: Found potentially dangerous file')
     }
 ];
 
 export function buildRulesFromEnv(
-    parseBooleanEnv: (key: string) => boolean,
-    getNormalizedEnvBoolean: (keys: readonly string[]) => boolean
+    parseBooleanEnv: (key: string, defaultValue?: boolean) => boolean,
+    getNormalizedEnvBoolean: (keys: readonly string[], defaultValue?: boolean) => boolean
 ): RuleConfig {
     const rules = { ...DEFAULT_RULE_CONFIG };
 
     for (const definition of RULE_DEFINITIONS) {
-        rules[definition.enabledKey] = parseBooleanEnv(definition.enabledEnv);
+        rules[definition.enabledKey] = parseBooleanEnv(definition.enabledEnv, rules[definition.enabledKey]);
 
         if (definition.blockKey && definition.blockEnv) {
             const blockEnvKeys = Array.isArray(definition.blockEnv)
                 ? definition.blockEnv
                 : [definition.blockEnv];
-            rules[definition.blockKey] = getNormalizedEnvBoolean(blockEnvKeys);
+            rules[definition.blockKey] = getNormalizedEnvBoolean(blockEnvKeys, rules[definition.blockKey]);
         }
     }
 

@@ -38,12 +38,12 @@ export default config;
 function resolveSonarrInstances(): SonarrInstanceConfig[] {
     try {
         const instancesFromEnv = loadInstancesFromEnv();
-        if (instancesFromEnv?.length) {
+        if (instancesFromEnv !== undefined) {
             return instancesFromEnv;
         }
 
         const instancesFromFile = loadInstancesFromFile();
-        if (instancesFromFile?.length) {
+        if (instancesFromFile !== undefined) {
             return instancesFromFile;
         }
 

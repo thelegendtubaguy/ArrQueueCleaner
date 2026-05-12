@@ -94,6 +94,34 @@ describe('config', () => {
         }
     });
 
+    it('uses an empty SONARR_INSTANCES array instead of legacy environment variables', async () => {
+        process.env.SONARR_INSTANCES = '[]';
+        process.env.SONARR_HOST = 'http://legacy-sonarr:8989';
+        process.env.SONARR_API_KEY = 'legacy-key';
+
+        const config = await loadConfig();
+
+        expect(config.sonarrInstances).toEqual([]);
+    });
+
+    it('uses an empty SONARR_INSTANCES_FILE array instead of legacy environment variables', async () => {
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'arrqueuecleaner-'));
+        const filePath = path.join(tmpDir, 'instances.json');
+        fs.writeFileSync(filePath, '[]');
+
+        process.env.SONARR_INSTANCES_FILE = filePath;
+        process.env.SONARR_HOST = 'http://legacy-sonarr:8989';
+        process.env.SONARR_API_KEY = 'legacy-key';
+
+        try {
+            const config = await loadConfig();
+
+            expect(config.sonarrInstances).toEqual([]);
+        } finally {
+            fs.rmSync(tmpDir, { recursive: true, force: true });
+        }
+    });
+
     it('loads Sonarr instances from YAML file when dependency is available', async () => {
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'arrqueuecleaner-'));
         const filePath = path.join(tmpDir, 'instances.yaml');

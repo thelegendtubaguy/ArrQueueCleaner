@@ -22,15 +22,15 @@
     "devDependencies": {
         "@eslint/js": "^9.39.4",
         "@types/jest": "^30.0.0",
-        "@types/node": "^25.6.0",
+        "@types/node": "^25.7.0",
         "@typescript-eslint/eslint-plugin": "^8.59.2",
-        "@typescript-eslint/parser": "^8.59.2",
+        "@typescript-eslint/parser": "^8.59.3",
         "eslint": "^10.3.0",
-        "jest": "^30.3.0",
+        "jest": "^30.4.2",
         "ts-jest": "^29.4.9",
         "tsx": "^4.21.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.59.2"
+        "typescript-eslint": "^8.59.3"
     },
     "engines": {
         "node": ">=22"

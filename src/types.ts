@@ -13,6 +13,8 @@ export interface RuleConfig {
     blockRemovedEpisodeCountMismatchReleases: boolean;
     removeUndeterminedSample: boolean;
     blockRemovedUndeterminedSampleReleases: boolean;
+    removePotentiallyDangerousFiles: boolean;
+    blockPotentiallyDangerousFiles: boolean;
 }
 
 export interface SonarrInstanceConfig {
@@ -46,9 +48,10 @@ export interface StatusMessage {
     messages?: string[];
 }
 
-export type RuleType = 'quality' | 'archive' | 'executable' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'episodeCountMismatch' | 'undeterminedSample';
+export type RuleType = 'quality' | 'archive' | 'executable' | 'noFiles' | 'notAnUpgrade' | 'seriesIdMismatch' | 'episodeCountMismatch' | 'undeterminedSample' | 'potentiallyDangerousFile';
 
 export interface RuleMatch {
     type: RuleType;
+    shouldRemove: boolean;
     shouldBlock: boolean;
 }

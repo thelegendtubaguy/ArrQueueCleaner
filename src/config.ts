@@ -6,15 +6,17 @@ import { Config, RuleConfig, SonarrInstanceConfig } from './types';
 
 dotenvConfig();
 
-const parseBooleanEnv = (key: string): boolean => process.env[key] === 'true';
+const parseBooleanEnv = (key: string, defaultValue = false): boolean => (
+    process.env[key] === undefined ? defaultValue : process.env[key] === 'true'
+);
 
-const getNormalizedEnvBoolean = (keys: readonly string[]): boolean => {
+const getNormalizedEnvBoolean = (keys: readonly string[], defaultValue = false): boolean => {
     for (const key of keys) {
         if (process.env[key] !== undefined) {
             return parseBooleanEnv(key);
         }
     }
-    return false;
+    return defaultValue;
 };
 
 const rulesFromEnv: RuleConfig = buildRulesFromEnv(parseBooleanEnv, getNormalizedEnvBoolean);

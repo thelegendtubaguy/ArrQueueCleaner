@@ -68,5 +68,15 @@ describe('SonarrClient', () => {
                 params: { removeFromClient: true, blocklist: true }
             });
         });
+
+        it('should support blocklisting without removing from the download client', async () => {
+            mockAxiosInstance.delete.mockResolvedValue({ data: {} });
+
+            await client.blockRelease(123, false);
+
+            expect(mockAxiosInstance.delete).toHaveBeenCalledWith('/queue/123', {
+                params: { removeFromClient: false, blocklist: true }
+            });
+        });
     });
 });

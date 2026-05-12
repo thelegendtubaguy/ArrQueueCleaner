@@ -1,6 +1,13 @@
 import axios, { AxiosInstance } from 'axios';
 import { QueueItem } from './types';
 
+const QUEUE_PAGE_SIZE = 100;
+
+interface QueueResponse {
+    records?: QueueItem[];
+    totalRecords?: number;
+}
+
 export class SonarrClient {
     private client: AxiosInstance;
     private host: string;
@@ -31,10 +38,30 @@ export class SonarrClient {
     }
 
     async getQueue(): Promise<QueueItem[]> {
-        const { data } = await this.client.get('/queue');
-        this.log('debug', `Successfully contacted Sonarr API at ${this.host}/api/v3/queue`);
-        this.log('debug', `Queue response: ${JSON.stringify(data, null, 2)}`);
-        return data.records || data;
+        const records: QueueItem[] = [];
+        let page = 1;
+
+        while (true) {
+            const { data } = await this.client.get<QueueItem[] | QueueResponse>('/queue', { params: { page, pageSize: QUEUE_PAGE_SIZE } });
+            this.log('debug', `Successfully contacted Sonarr API at ${this.host}/api/v3/queue`);
+            this.log('debug', `Queue response: ${JSON.stringify(data, null, 2)}`);
+
+            if (Array.isArray(data)) {
+                return data;
+            }
+
+            if (!Array.isArray(data.records)) {
+                throw new Error('Unexpected Sonarr queue response: missing records array');
+            }
+
+            records.push(...data.records);
+
+            if (data.records.length === 0 || data.totalRecords === undefined || records.length >= data.totalRecords) {
+                return records;
+            }
+
+            page++;
+        }
     }
 
     async removeFromQueue(id: number): Promise<void> {

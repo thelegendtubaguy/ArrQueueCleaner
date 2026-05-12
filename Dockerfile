@@ -1,4 +1,4 @@
-FROM node:25-alpine
+FROM node:26-alpine
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \

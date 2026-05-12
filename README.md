@@ -33,11 +33,13 @@ Automated queue cleaner for Sonarr that removes stuck downloads based on configu
 | `BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES` | `false` | Add episode-count mismatch items to blocklist |
 | `REMOVE_UNDETERMINED_SAMPLE` | `false` | Remove items unable to determine if file is a sample |
 | `BLOCK_REMOVED_UNDETERMINED_SAMPLE` | `false` | Add undetermined sample items to blocklist |
+| `REMOVE_POTENTIALLY_DANGEROUS_FILES` | `true` | Remove items where Sonarr reports a potentially dangerous file |
+| `BLOCK_POTENTIALLY_DANGEROUS_FILES` | `true` | Add potentially dangerous file items to blocklist |
 | `DRY_RUN` | `false` | Log actions without actually removing/blocking items |
 | `SCHEDULE` | `*/5 * * * *` | Cron schedule (every 5 minutes) |
 | `LOG_LEVEL` | `info` | Logging level |
 
-**Note:** No rules are configured by default for safety, you must opt in to using them.
+**Note:** Potentially dangerous file cleanup is enabled by default. Other rules are disabled by default and must be enabled explicitly.
 
 ### Multiple Sonarr Instances
 
@@ -108,6 +110,8 @@ services:
       BLOCK_REMOVED_EPISODE_COUNT_MISMATCH_RELEASES: 'false'
       REMOVE_UNDETERMINED_SAMPLE: 'false'
       BLOCK_REMOVED_UNDETERMINED_SAMPLE: 'false'
+      REMOVE_POTENTIALLY_DANGEROUS_FILES: 'true'
+      BLOCK_POTENTIALLY_DANGEROUS_FILES: 'true'
       DRY_RUN: 'false'
       SCHEDULE: '*/5 * * * *'
       LOG_LEVEL: 'info'

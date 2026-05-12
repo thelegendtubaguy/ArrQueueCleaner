@@ -88,3 +88,11 @@ export const createUndeterminedSampleItem = (overrides: Partial<QueueItem> = {})
         }],
         ...overrides
     });
+
+export const createPotentiallyDangerousFileItem = (overrides: Partial<QueueItem> = {}): QueueItem =>
+    createMockQueueItem({
+        statusMessages: [{
+            messages: ['Caution: Found potentially dangerous file']
+        }],
+        ...overrides
+    });

@@ -16,6 +16,8 @@ describe('config', () => {
         delete process.env.SONARR_INSTANCES_FILE;
         delete process.env.SONARR_HOST;
         delete process.env.SONARR_API_KEY;
+        delete process.env.REMOVE_POTENTIALLY_DANGEROUS_FILES;
+        delete process.env.BLOCK_POTENTIALLY_DANGEROUS_FILES;
         jest.spyOn(console, 'error').mockImplementation();
     });
 
@@ -135,6 +137,27 @@ describe('config', () => {
         expect(config.rules).toMatchObject({
             removeUndeterminedSample: true,
             blockRemovedUndeterminedSampleReleases: true
+        });
+    });
+
+    it('enables potentially dangerous file cleanup and blocklisting by default', async () => {
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removePotentiallyDangerousFiles: true,
+            blockPotentiallyDangerousFiles: true
+        });
+    });
+
+    it('allows potentially dangerous file defaults to be disabled by env vars', async () => {
+        process.env.REMOVE_POTENTIALLY_DANGEROUS_FILES = 'false';
+        process.env.BLOCK_POTENTIALLY_DANGEROUS_FILES = 'false';
+
+        const config = await loadConfig();
+
+        expect(config.rules).toMatchObject({
+            removePotentiallyDangerousFiles: false,
+            blockPotentiallyDangerousFiles: false
         });
     });
 

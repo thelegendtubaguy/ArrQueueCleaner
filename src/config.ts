@@ -69,7 +69,7 @@ function loadInstancesFromEnv(): SonarrInstanceConfig[] | undefined {
 
         return parsed.map((instance, index) => normalizeInstance(instance, index));
     } catch (error) {
-        throw new Error(`Failed to parse SONARR_INSTANCES: ${(error as Error).message}`);
+        throw new Error(`Failed to parse SONARR_INSTANCES: ${(error as Error).message}`, { cause: error });
     }
 }
 
@@ -95,7 +95,7 @@ function loadInstancesFromFile(): SonarrInstanceConfig[] | undefined {
             parsed = JSON.parse(fileContents);
         }
     } catch (error) {
-        throw new Error(`Failed to parse ${resolvedPath}: ${(error as Error).message}`);
+        throw new Error(`Failed to parse ${resolvedPath}: ${(error as Error).message}`, { cause: error });
     }
 
     if (!Array.isArray(parsed)) {
@@ -112,7 +112,7 @@ function parseYaml(contents: string): unknown {
         return yaml.parse(contents);
     } catch (error) {
         if ((error as NodeJS.ErrnoException).code === 'MODULE_NOT_FOUND') {
-            throw new Error('Parsing YAML requires the optional "yaml" dependency. Install it or provide JSON.');
+            throw new Error('Parsing YAML requires the optional "yaml" dependency. Install it or provide JSON.', { cause: error });
         }
         throw error;
     }

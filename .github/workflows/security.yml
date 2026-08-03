@@ -34,7 +34,7 @@ jobs:
         
       - name: Setup pnpm
         if: github.event_name == 'schedule' || steps.changes.outputs.run_scan == 'true'
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v6.0.9
 
       - name: Install dependencies
         if: github.event_name == 'schedule' || steps.changes.outputs.run_scan == 'true'

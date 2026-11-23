@@ -15,7 +15,7 @@
     },
     "dependencies": {
         "axios": "^1.21.1",
-        "cron": "^4.4.0",
+        "cron": "^4.4.1",
         "dotenv": "^18.0.10",
         "yaml": "^2.9.1"
     },
@@ -23,15 +23,15 @@
         "@eslint/js": "^10.0.1",
         "@types/jest": "^30.0.0",
         "@types/node": "^26.6.6",
-        "@typescript-eslint/eslint-plugin": "^8.72.0",
+        "@typescript-eslint/eslint-plugin": "^8.73.0",
         "@typescript-eslint/parser": "^8.73.0",
-        "@typescript/native": "npm:typescript@^7.0.2",
+        "@typescript/native": "npm:typescript@7.1.0-beta",
         "eslint": "^10.15.0",
         "jest": "^30.5.2",
         "ts-jest": "^29.4.15",
         "tsx": "^4.23.15",
         "typescript": "npm:@typescript/typescript6@^6.0.2",
-        "typescript-eslint": "^8.72.2"
+        "typescript-eslint": "^8.73.0"
     },
     "engines": {
         "node": ">=26"
